@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->foreignId('service_id')->references('id')->on('services')->cascadeOnDelete();
-            $table->foreignId('employee_id')->references('id')->on('employees')->cascadeOnDelete();
             $table->dateTime('booking_date');
             $table->enum('status',['pending','confirmed','rejected','cancelled'])->default('pending');
             $table->text('notes')->nullable();

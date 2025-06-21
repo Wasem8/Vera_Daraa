@@ -18,6 +18,8 @@ return new class extends Migration
             $table->text('description');
             $table->string('image')->nullable();
             $table->decimal('price', 10, 2);
+            $table->integer('booking_count')->default(0);
+            $table->boolean('is_bookable')->default(false);
             $table->integer('duration');
             $table->timestamps();
         });
