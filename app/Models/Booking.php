@@ -17,4 +17,9 @@ class Booking extends Model
     {
         return $this->belongsTo(Service::class);
     }
+    public function payments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Payment::class);
+
+    }
 }

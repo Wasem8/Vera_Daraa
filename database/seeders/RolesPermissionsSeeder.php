@@ -18,6 +18,8 @@ class RolesPermissionsSeeder extends Seeder
         $adminRole=Role::create(['name' => 'admin', 'guard_name' => 'web']);
         $clientRole=Role::create(['name' => 'client','guard_name' => 'web']);
         $receptionistRole=Role::create(['name' => 'receptionist','guard_name' => 'web']);
+        $doctorRole=Role::create(['name' => 'doctor','guard_name' => 'web']);
+        $accountantRole=Role::create(['name' => 'accountant','guard_name' => 'web']);
 
         $permissions = ['create','update','delete','view'];
         foreach ($permissions as $permission) {
@@ -65,6 +67,20 @@ class RolesPermissionsSeeder extends Seeder
         $permissions = $clientRole->permissions()->pluck('name')->toArray();
         $clientUser->givePermissionTo($permissions);
 
+        //////
+        $doctorUser= User::factory()->create([
+            'name' => 'Doctor',
+            'email' => 'doctor@gmail.com',
+            'password' => bcrypt('secret'),
+        ]);
+        $doctorUser->assignRole($doctorRole);
+        /////
+        $accountantUser= User::factory()->create([
+            'name' => 'accountant',
+            'email' => 'accountant@gmail.com',
+            'password' => bcrypt('secret'),
+        ]);
+        $accountantUser->assignRole($accountantRole);
 
 
 

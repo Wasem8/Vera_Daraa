@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileRequest;
 use App\Http\Responses\Response;
+use App\Models\Profile;
 use App\Models\User;
 use App\Services\ProfileService;
 use Illuminate\Http\Request;
@@ -26,6 +27,19 @@ class ProfileController extends Controller
             return Response::Error($data, $message);
         }
     }
+    public function adminEditClientProfile(ProfileRequest $request,$userId)
+    {
+        $data = [];
+        if(!auth()->user()->hasRole('admin')){
+            return Response::Error("You are not authorized to access this resource",401);
+        }
+        try {
+            $data = $this->profileService->updateByAdmin($request,$userId);
+            return Response::Success($data['profile'], $data['message']);
+        }catch (\Throwable $exception){
+            return Response::Error($data,$exception->getMessage());
+        }
+    }
 
     public function showProfile()
     {
@@ -39,6 +53,20 @@ class ProfileController extends Controller
             $profile = $user->profile;
             return Response::Success($profile,'success');
         }
+    }
+
+    public function getClientHistory($clientId)
+    {
+        if (!auth()->user()->hasRole('admin')) {
+            return Response::Error([],'Unauthorized');
+        }
+        try {
+            $data = $this->profileService->getClientHistory($clientId);
+            return Response::Success($data,'success');
+        }catch (\Throwable $exception){
+            return Response::Error([],$exception->getMessage());
+        }
+
     }
 
 }

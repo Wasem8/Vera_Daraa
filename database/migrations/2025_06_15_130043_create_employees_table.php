@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('department_id')->references('id')->on('departments')->cascadeOnDelete();
             $table->string('specialty');
             $table->date('hire_date')->nullable();
+            $table->timestamp('archived_at')->nullable();
             $table->timestamps();
         });
     }

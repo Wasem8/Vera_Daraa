@@ -2,6 +2,7 @@
 
 
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\EmployeeController;
 use App\Http\Controllers\Client\AuthController;
 use App\Http\Controllers\ResetPasswordController;
 use App\Http\Middleware\VerifiedEmail;
