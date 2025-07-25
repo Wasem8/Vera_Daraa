@@ -6,7 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class Payment extends Model
 {
-    public function bookings()
+    protected $fillable = [
+        'booking_id',
+        'amount' ,
+        'payment_method' ,
+        'payment_date',
+        'invoice_number'
+    ];
+
+    public function booking(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Booking::class);
     }

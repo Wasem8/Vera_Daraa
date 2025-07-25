@@ -89,9 +89,7 @@ class EmployeeService
                 $q->whereHas('user.roles', function ($q) use ($filters) {
                     $q->where('name', $filters['role']);
                 });
-            })
-            ->orderBy('id','desc')
-            ->paginate(10);
+            })->get();
     }
 
     public function SearchEmployees(string $search)
@@ -100,9 +98,7 @@ class EmployeeService
             ->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
-            })
-            ->orderBy('id','desc')
-            ->paginate(10);
+            })->get();
     }
 
     public function toggleArchive($id)

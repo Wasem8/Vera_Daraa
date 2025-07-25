@@ -23,7 +23,7 @@ class BookingService
         $service->booking_count +=1;
         $service->save();
         $booking = Booking::query()->create([
-            'user_id' => Auth::user()->id,
+            'user_id' => Auth::id(),
             'service_id' => $service->id,
             'booking_date' => $request->booking_date,
             'notes' => $request->notes,
@@ -39,10 +39,39 @@ class BookingService
         if(!$booking){
             return ['booking' => null, 'message' => 'Booking not found'];
         }
-        $booking->update([
-            'booking_date' => $request->booking_date,
-            'notes' => $request->notes,
-        ]);
-        return ['booking' => $booking,'message' => 'Booking has been updated'];
+
+        if(Auth::user()->hasRole('client') && Auth::id() == $booking->user_id || Auth::user()->hasRole('admin') || Auth::user()->hasRole('receptionist')){
+            $booking->update([
+                'booking_date' => $request->booking_date,
+                'notes' => $request->notes,
+            ]);
+            return ['booking' => $booking,'message' => 'Booking has been updated'];
+        }else {
+            return ['booking' => null, 'message' => 'You are not allowed to update booking'];
+        }
+
     }
+
+   public function deleteBooking($bookingId){
+        $booking = Booking::query()->find($bookingId);
+
+        if(!$booking){
+            return ['booking' => null, 'message' => 'Booking not found'];
+        }
+        elseif ($booking->status == 'cancelled'){
+            return ['booking' => null, 'message' => 'Booking has been cancelled'];
+        }
+        elseif (Auth::user()->hasRole('client') && Auth::id() == $booking->user_id || Auth::user()->hasRole(['admin','receptionist']) ) {
+            $booking->update([
+                'status' => 'cancelled'
+                ]);
+            $booking->service()->decrement('booking_count');
+            return ['booking' => $booking,'message' => 'Booking has been cancelled'];
+        }
+        else {
+            return ['booking' => null, 'message' => 'You are not allowed to delete booking'];
+        }
+   }
+
+
 }

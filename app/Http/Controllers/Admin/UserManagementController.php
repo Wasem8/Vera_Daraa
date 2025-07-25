@@ -6,16 +6,25 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\Response;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserManagementController extends Controller
 {
     public function index(){
-        $users = User::query()->whereNotIn('id',[auth()->id()] )->get();
-        return Response::Success($users,'Users List');
+        if(Auth::user()->hasRole('admin')) {
+            $users = User::query()->whereNotIn('id', [auth()->id()])->get();
+            return Response::Success($users, 'Users List');
+        }else{
+            return Response::Error(false,'Unauthorized');
+        }
     }
 
-    public function toggleStatus(User $user)
+    public function toggleStatus($userId)
     {
+        $user = User::query()->find($userId);
+        if(!$user) {
+            return Response::Error(false,'User not found');
+        }
         if($user->hasRole('admin') && $user->id == 1){
             return Response::Error('false','the status of admin can not be set');
         }

@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class Service extends Model
 {
 
+    protected $fillable = ['name', 'department_id','description', 'price','image'
+    ,'is_bookable','duration'
+    ];
     public function department(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Department::class);

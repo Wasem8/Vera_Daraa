@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Controllers\Receptionist;
+namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\Response;
 use App\Services\UserService;
 use Illuminate\Http\Request;
 
-class AuthController extends Controller
+class ReceptionistAuthController extends Controller
 {
     private UserService $userService;
     public function __construct(UserService $userService){

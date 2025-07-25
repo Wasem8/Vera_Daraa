@@ -1,20 +1,15 @@
 <?php
 
 
-use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Client\AuthController;
-use App\Http\Controllers\Client\BookingController;
-use App\Http\Controllers\Client\DepartmentController;
+use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Auth\ResetPasswordController;
+use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Client\FavouriteController;
-use App\Http\Controllers\Client\ServiceController;
+use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\ResetPasswordController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Middleware\VerifiedEmail;
-use App\Models\User;
-use Illuminate\Auth\Events\Verified;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
-use App\Http\Responses\Response;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {
@@ -32,7 +27,7 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/register',[AuthController::class,'register']);
-Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware( 'signed')->name('verification.verify');
+Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware( 'signed');
 Route::post('/email/verification-notification', [AuthController::class, 'resendEmail'])->middleware( 'throttle:6,1');
 Route::post('/login',[AuthController::class,'clientLogin']);
 Route::post('/forget-password',[ResetPasswordController::class,'userForgetPassword']);
@@ -43,21 +38,27 @@ Route::post('/reset-password',[ResetPasswordController::class,'userResetPassword
 
 Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function () {
     Route::post('/logout',[AuthController::class,'clientLogout']);
+
     Route::post('edit-profile',[ProfileController::class,'editProfile']);
     Route::get('/profile',[ProfileController::class,'showProfile']);
+
     ////services
-    Route::get('/services',[ServiceController::class,'ShowServices']);
+    Route::get('/services',[ServiceController::class,'index']);
     Route::get('/service/{id}',[ServiceController::class,'ShowService']);
     Route::post('/search-services',[ServiceController::class,'searchServices']);
+
     ////Departments
-    Route::get('/departments',[DepartmentController::class,'ShowDepartments']);
-    Route::get('/department/{id}',[DepartmentController::class,'ShowDepartment']);
-    Route::get('/services/{id}',[DepartmentController::class,'showServices']);
+    Route::get('/departments',[DepartmentController::class,'index']);
+    Route::get('/department/{id}',[DepartmentController::class,'show']);
+    Route::get('/department/{departmentId}/services',[DepartmentController::class,'servicesDepartment']);
+
     ///Booking
     Route::post('/booking',[BookingController::class,'booking']);
     Route::post('/update-booking',[BookingController::class,'updateBooking']);
     Route::get('/get-bookings',[BookingController::class,'getBookings']);
     Route::get('/get-booking/{id}',[BookingController::class,'getBooking']);
+    Route::delete('delete-booking/{id}',[BookingController::class,'deleteBooking']);
+
     //Favourites
     Route::post('/add-favourite/{id}',[FavouriteController::class,'addFavourite']);
     Route::post('/remove-favourite/{id}',[FavouriteController::class,'removeFavourite']);

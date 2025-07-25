@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Http\Requests\AddDepartmentRequest;
 use App\Http\Requests\UpdateDepartmentRequest;
 use App\Http\Responses\Response;
@@ -28,14 +27,26 @@ class DepartmentController extends Controller
         }
     }
 
+
+
+    public function show($id)
+    {
+        $department = Department::query()->find($id);
+        return Response::success($department,'department retrieved successfully');
+    }
+
     public function store(AddDepartmentRequest $request)
     {
         $departmentRequest = $request->validated();
         try {
 
             $department = $this->departmentService->create($departmentRequest);
+            if($department != false){
+                return Response::Success($department, 'Department created successfully');
+            }else{
+                return Response::Error(false,"you dont have permmission to add department");
+            }
 
-            return Response::Success($department, 'Department created successfully');
         }catch (\Exception $exception){
             return Response::Error($exception->getMessage(), $exception->getCode());
         }
@@ -56,6 +67,15 @@ class DepartmentController extends Controller
     {
         $this->departmentService->destroy($department);
         return Response::Success([],'Department deleted successfully');
+    }
 
+
+    public function servicesDepartment($departmentId){
+        $department = Department::query()->with('services')->find($departmentId);
+        $services = $department->services;
+        if(!$department){
+            return Response::Error(false,"Department not found");
+        }
+        return Response::Success($services,'Service List');
     }
 }

@@ -1,16 +1,11 @@
 <?php
 
 
-use App\Http\Controllers\Admin\AdminAuthController;
-use App\Http\Controllers\Admin\EmployeeController;
-use App\Http\Controllers\Client\AuthController;
-use App\Http\Controllers\ResetPasswordController;
-use App\Http\Middleware\VerifiedEmail;
+use App\Http\Responses\Response;
 use App\Models\User;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
-use App\Http\Responses\Response;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/user', function (Request $request) {

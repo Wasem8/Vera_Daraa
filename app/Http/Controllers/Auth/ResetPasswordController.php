@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Auth;
 
 
+use App\Http\Controllers\Controller;
 use App\Mail\SendCodeResetPassword;
 use App\Models\ResetCodePassword;
 use App\Models\User;
-use http\Message;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 
