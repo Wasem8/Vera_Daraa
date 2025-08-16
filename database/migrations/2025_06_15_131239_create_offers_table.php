@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('offers', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->text('description');
             $table->decimal('discount_percentage', 10, 2);
+            $table->boolean('is_active')->default(true);
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

@@ -74,4 +74,7 @@ class BookingController extends Controller
             return Response::Error(null, 'You are not allowed to book this booking');
         }
     }
+
+
+
 }

@@ -11,10 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('service__offers', function (Blueprint $table) {
+        Schema::create('offer_service', function (Blueprint $table) {
             $table->id();
             $table->foreignId('offer_id')->references('id')->on('offers')->cascadeOnDelete();
             $table->foreignId('service_id')->references('id')->on('services')->cascadeOnDelete();
+            $table->decimal('discounted_price',10,2);
             $table->timestamps();
         });
     }
@@ -24,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('service__offers');
+        Schema::dropIfExists('offer_service');
     }
 };

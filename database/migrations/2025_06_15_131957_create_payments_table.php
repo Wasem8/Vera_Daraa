@@ -13,11 +13,9 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('booking_id')->references('id')->on('bookings')->cascadeOnDelete();
+            $table->foreignId('invoice_id')->constrained();
             $table->decimal('amount', 10, 2);
             $table->dateTime('payment_date');
-            $table->enum('payment_method',['cash','card','online']);
-            $table->string('invoice_number');
             $table->timestamps();
         });
     }

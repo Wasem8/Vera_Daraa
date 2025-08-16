@@ -15,11 +15,13 @@ class RolesPermissionsSeeder extends Seeder
      */
     public function run(): void
     {
+
         $adminRole=Role::create(['name' => 'admin', 'guard_name' => 'web']);
         $clientRole=Role::create(['name' => 'client','guard_name' => 'web']);
         $receptionistRole=Role::create(['name' => 'receptionist','guard_name' => 'web']);
         $doctorRole=Role::create(['name' => 'doctor','guard_name' => 'web']);
         $accountantRole=Role::create(['name' => 'accountant','guard_name' => 'web']);
+
 
         $permissions = ['create','update','delete','view'];
         foreach ($permissions as $permission) {
@@ -81,8 +83,6 @@ class RolesPermissionsSeeder extends Seeder
             'password' => bcrypt('secret'),
         ]);
         $accountantUser->assignRole($accountantRole);
-
-
-
     }
+
 }

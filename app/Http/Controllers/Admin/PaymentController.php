@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\PaymentRequest;
 use App\Http\Responses\Response;
 use App\Models\Booking;
+use App\Models\Invoice;
 use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,10 +14,14 @@ use Illuminate\Support\Facades\Auth;
 class PaymentController extends Controller
 {
 
+
     public function payment($paymentId){
-        $payments = Payment::query()->find($paymentId);
-        if($payments != null){
-            return Response::success($payments,'payment');
+        $payment = Payment::query()->find($paymentId);
+        if(!Auth::user()->hasRole(['admin','receptionist'])|| Auth::id() == $payment->user_id){
+            return Response::Error(false, "You don't have permission to access this page");
+        }
+        if($payment != null){
+            return Response::success($payment,'payment');
         }
         return Response::success(null,'payment not found');
     }
@@ -30,26 +35,34 @@ class PaymentController extends Controller
         return Response::Error(false,'you are not authorized');
     }
 
-    public function store(PaymentRequest $request,$bookingId)
-    {
-        $paymentRequest = $request->validated();
-        $booking =  Booking::query()->find($bookingId);
-        if (!Auth::user()->hasRole(['admin', 'receptionist'])) {
-            return Response::error(false,'you are not authorized');
-        }
-        if(!$booking){
-            return Response::Error(null,'booking not found');
-        }
-        if ($booking->payment()->exists()) {
-            return Response::Success(false,'payment already exist');
-        }
-        $servicePrice = $booking->service->price;
-        if($request->amount != $servicePrice){
-            return Response::Success(false,'payment price is not correct');
-        }
-       $payment = $booking->payment()->create($paymentRequest);
 
-        return Response::Success($payment,'success');
+
+    public function store(PaymentRequest $request,$invoiceId)
+    {
+
+        if (!Auth::user()->hasRole(['admin', 'receptionist'])) {
+            return Response::error(false, 'you are not authorized');
+        }
+        $invoice = Invoice::query()->find($invoiceId);
+        if (!$invoice) {
+            return Response::Error(null, 'invoice not found');
+        }
+        if($invoice->status == 'paid'){
+            return Response::Success(false,'already paid');
+        }
+
+        if($request->amount > $invoice->remaining_amount){
+            return Response::Success($invoice->remaining_amount,'the amount bigger than remaining amount');
+        }
+
+        $payment = Payment::create([
+            'amount' => $request->amount,
+            'payment_date' => now(),
+            'invoice_id' => $invoiceId
+        ]);
+
+        $invoice->updateAmounts();
+        return Response::Success($invoice,'success');
     }
 
 }

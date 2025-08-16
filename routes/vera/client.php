@@ -60,10 +60,10 @@ Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function (
     Route::delete('delete-booking/{id}',[BookingController::class,'deleteBooking']);
 
     //Favourites
-    Route::post('/add-favourite/{id}',[FavouriteController::class,'addFavourite']);
-    Route::post('/remove-favourite/{id}',[FavouriteController::class,'removeFavourite']);
-    Route::post('/favourite/{id}',[FavouriteController::class,'favourite']);
-    Route::post('/favourites',[FavouriteController::class,'favourites']);
+    Route::get('/add-favourite/{id}',[FavouriteController::class,'addFavourite']);
+    Route::delete('/remove-favourite/{id}',[FavouriteController::class,'removeFavourite']);
+    Route::get('/favourite/{id}',[FavouriteController::class,'favourite']);
+    Route::get('/favourites',[FavouriteController::class,'favourites']);
 
 });
 

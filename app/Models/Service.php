@@ -24,4 +24,9 @@ class Service extends Model
     {
         return $this->hasMany(Client_Favorite::class);
     }
+
+    public function offers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Offer::class)->withPivot('discounted_price');
+    }
 }
