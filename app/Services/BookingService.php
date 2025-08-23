@@ -98,10 +98,6 @@ class BookingService
        }
 
 
-       $existingBooking = Booking::query()->where('user_id', $request->user_id)->where('service_id', $request->service_id)->first();
-       if ($existingBooking) {
-           return ['booking' => null, 'message' => 'Booking already exists'];
-       }
 
        $service->booking_count +=1;
        $service->save();
@@ -116,5 +112,6 @@ class BookingService
 
 
    }
+
 
 }

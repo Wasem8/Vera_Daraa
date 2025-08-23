@@ -40,6 +40,12 @@ class User extends Authenticatable implements  MustVerifyEmail
         'remember_token',
     ];
 
+    public function getRoleAttribute()
+    {
+        return $this->roles()->first()?->name;
+    }
+    protected $appends = ['role'];
+
     /**
      * Get the attributes that should be cast.
      *

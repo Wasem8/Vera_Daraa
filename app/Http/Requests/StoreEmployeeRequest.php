@@ -25,7 +25,7 @@ class StoreEmployeeRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
-            'specialty' => 'required|string|max:255',
+//            'specialty' => 'required|string|max:255',
             'department_id' => 'required|exists:departments,id',
             'hire_date' => 'required|date',
             'role' => 'required|string|in:receptionist,doctor,accountant',

@@ -26,7 +26,6 @@ class UpdateEmployeeRequest extends FormRequest
         return [
             'name' => 'sometimes|required|string|max:255',
             'email' => "sometimes|required|string|email|max:255|unique:users,email,{$userId}",
-            'specialty' => 'sometimes|required|string|max:255',
             'department_id' => 'sometimes|required|exists:departments,id',
             'hire_date' => 'sometimes|required|date',
         ];

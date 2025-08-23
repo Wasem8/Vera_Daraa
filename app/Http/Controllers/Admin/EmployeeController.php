@@ -96,5 +96,10 @@ class EmployeeController extends Controller
 
     }
 
+    public function showArchive()
+    {
+        $archives = Employee::all()->where('archived_at',true);
+        return Response::Success($archives->load('user'),'Employee archived successfully');
+    }
 
 }

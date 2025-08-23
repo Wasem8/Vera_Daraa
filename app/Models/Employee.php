@@ -14,10 +14,11 @@ class Employee extends Model
         'department_id',
         'phone',
         'image',
-        'specialty',
+//        'specialty',
         'hire_date',
         'archived_at',
     ];
+
 
     public function user(): BelongsTo
     {

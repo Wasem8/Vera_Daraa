@@ -85,7 +85,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('popular-services',[StatisticsController::class,'mostPopularServices']);
 });
 
-Route::group(['middleware' => ['auth:sanctum', 'active']], function () {
+Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/users',[UserManagementController::class,'index']);
     Route::get('/user/{id}',[UserManagementController::class,'show']);
     Route::post('/users/{user}/toggle-status',[UserManagementController::class,'toggleStatus']);
@@ -96,9 +96,10 @@ Route::middleware(['auth:sanctum'])->prefix('admin/employees')->group(function (
 
     Route::get('/', [EmployeeController::class, 'index'])->name('admin.employees.index');
     Route::post('/', [EmployeeController::class, 'store'])->name('admin.employees.store');
-    Route::post('/{employee}', [EmployeeController::class, 'update'])->name('admin.employees.update');
+    Route::put('/{employee}', [EmployeeController::class, 'update'])->name('admin.employees.update');
     Route::get('/search',[EmployeeController::class, 'search'])->name('admin.employees.search');
    Route::post('/{id}/toggle-archive',[EmployeeController::class, 'archive'])->name('admin.employees.archive');
+   Route::get('archives',[EmployeeController::class,'showArchive']);
 });
 
 Route::middleware(['auth:sanctum'])->prefix('admin/departments')->group(function () {

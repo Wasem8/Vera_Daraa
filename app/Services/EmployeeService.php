@@ -28,17 +28,20 @@ class EmployeeService
            $employee = Employee::create([
                'user_id' => $user->id,
                'department_id' => $data['department_id'],
-               'specialty' => $data['specialty'],
                'hire_date' => $data['hire_date'],
                'archived_at' => null,
            ]);
+
+
            return $employee->load('user');
        });
     }
 
+
+
     public function update(Employee $employee, array $data): Employee
     {
-        DB::transaction(function () use ($employee, $data) {
+         DB::transaction(function () use ($employee, $data) {
             $userData = [];
             if (array_key_exists('name', $data)) {
                 $userData['name'] = $data['name'];
@@ -49,10 +52,11 @@ class EmployeeService
             Log::info('User data to update:', $userData);
             if (!empty($userData)) {
                 $employee->user->update($userData);
-
             }
+
+
             $employeeData = [];
-            foreach (['specialty', 'department_id', 'hire_date'] as $key) {
+            foreach ([ 'department_id', 'hire_date'] as $key) {
                 if (array_key_exists($key, $data)) {
                     $employeeData[$key] = $data[$key];
                 }
@@ -60,16 +64,15 @@ class EmployeeService
             Log::info('Employee data to update:', $employeeData);
             if (!empty($employeeData)) {
                 $employee->update($employeeData);
-
             }
-        });
-            return $employee;
 
+        });
+    return $employee->load('user');
           }
 
     public function filterEmployees(array $filters)
     {
-        return Employee::with('user')
+        $employee = Employee::with(['user'])
             ->when(isset($filters['department_id']),function ($q) use ($filters){
                 $q->where('department_id',$filters['department_id']);
             })
@@ -90,11 +93,13 @@ class EmployeeService
                     $q->where('name', $filters['role']);
                 });
             })->get();
+
+        return $employee;
     }
 
     public function SearchEmployees(string $search)
     {
-        return Employee::with('user')
+        return Employee::with(['user'])
             ->whereHas('user', function ($q) use ($search) {
                 $q->where('name', 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%');
