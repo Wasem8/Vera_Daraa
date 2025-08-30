@@ -33,7 +33,7 @@ class EmployeeService
            ]);
 
 
-           return $employee->load('user');
+           return $employee->load(['user','department']);
        });
     }
 

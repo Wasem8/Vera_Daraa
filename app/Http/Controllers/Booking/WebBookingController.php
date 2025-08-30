@@ -128,29 +128,25 @@ class WebBookingController extends Controller
         return Response::Success($invoice,'success');
     }
 
-    public function availability(Request $request)
+
+        public function availableSlots(Request $request)
     {
         $request->validate([
-            'date' => 'required|date_format:Y-m-d',
-            'services' => 'required|array|min:1',
-            'services.*' => 'exists:services,id',
+            'booking_date' => 'required|date',
+            'services' => 'required|array|min:1'
         ]);
 
-
-        $date = Carbon::parse($request->input('date'))->startOfDay();
-        $services = Service::with('category')->whereIn('id', $request->services)->get();
-
-
-        $result = [];
-        foreach ($services as $service) {
-            $result[$service->id] = $this->findServiceSlotsForDay($service, $date);
-        }
-
+        $slots = app(BookingService::class)->getAvailableSlots(
+            $request->booking_date,
+            $request->services
+        );
 
         return response()->json([
-            'success' => true,
-            'date' => $date->toDateString(),
-            'availability' => $result,
+            'booking_date' => $request->booking_date,
+            'services' => $request->services,
+            'available_slots' => $slots
         ]);
     }
+
+
 }

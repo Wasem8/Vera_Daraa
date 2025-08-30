@@ -7,22 +7,18 @@ use App\Models\Department;
 use App\Models\Service;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class  ServiceService
 {
     public function create(array $data)
     {
         if(Auth::user()->hasRole(['admin'])){
-            $image = $data['image'] ?? null;
-            $service = Service::query()->create($data);
-            if (!empty($image)) {
-                $path = $image->file('image');
-                $name = time() . '.' . $path->getClientOriginalExtension();
-                $destinationPath = public_path('/images/services');
-                $image->move($destinationPath, $name);
-                $service->image = $name;
+            if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+                $data['image'] = $data['image']->store('services', 'public');
             }
-            return $service;
+            return Service::query()->create($data);
+
         }else{
             return false;
         }
@@ -35,15 +31,23 @@ class  ServiceService
     public function update(array $data, Service $service)
     {
         if(Auth::user()->hasRole(['admin'])){
-                return DB::transaction(function() use ($service, $data) {
-                    $service->update($data);
-                    return $service->refresh();
-                });
+            if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+                if ($service->image && Storage::disk('public')->exists($service->image)) {
+                    Storage::disk('public')->delete($service->image);
+                }
 
+                $data['image'] = $data['image']->store('services', 'public');
+            }
+
+            $service->update($data);
+
+            return $service;
         }else{
             return false;
         }
 
     }
+
+
 
 }

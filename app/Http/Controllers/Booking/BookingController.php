@@ -75,6 +75,24 @@ class BookingController extends Controller
         }
     }
 
+    public function availableSlots(Request $request)
+    {
+        $request->validate([
+            'booking_date' => 'required|date',
+            'services' => 'required|array|min:1'
+        ]);
+
+        $slots = app(BookingService::class)->getAvailableSlots(
+            $request->booking_date,
+            $request->services
+        );
+
+        return response()->json([
+            'booking_date' => $request->booking_date,
+            'services' => $request->services,
+            'available_slots' => $slots
+        ]);
+    }
 
 
 }

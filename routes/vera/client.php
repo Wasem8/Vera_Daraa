@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Client\FavouriteController;
 use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\FaceAnalysisController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Middleware\VerifiedEmail;
@@ -60,6 +61,7 @@ Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function (
     Route::get('/get-bookings',[BookingController::class,'getBookings']);
     Route::get('/get-booking/{id}',[BookingController::class,'getBooking']);
     Route::delete('delete-booking/{id}',[BookingController::class,'deleteBooking']);
+    Route::post('available',[BookingController::class,'availableSlots']);
 
     //Favourites
     Route::get('/add-favourite/{id}',[FavouriteController::class,'addFavourite']);
@@ -67,6 +69,8 @@ Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function (
     Route::get('/favourite/{id}',[FavouriteController::class,'favourite']);
     Route::get('/favourites',[FavouriteController::class,'favourites']);
 
+
+    Route::post('/analyze-face', [FaceAnalysisController::class, 'analyze']);
 });
 
 

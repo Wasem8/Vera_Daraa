@@ -78,6 +78,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/archive-booking/{booking}',[WebBookingController::class,'archive']);
     Route::get('/un-archive/{booking}',[WebBookingController::class,'unArchive']);
     Route::post('update-booking',[WebBookingController::class,'updateBooking']);
+    Route::post('/available',[WebBookingController::class,'availableSlots']);
 
 
     ///statistics

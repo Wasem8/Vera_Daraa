@@ -13,6 +13,10 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
+    'facepp' => [
+        'api_key' => env('FACEPP_API_KEY'),
+        'api_secret' => env('FACEPP_API_SECRET'),
+    ],
 
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),

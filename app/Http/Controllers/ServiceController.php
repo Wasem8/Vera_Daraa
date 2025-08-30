@@ -26,19 +26,17 @@ class ServiceController extends Controller
 
     public function store(ServiceRequest $request){
         $serviceRequest = $request->validated();
-
-        try {
-
-            $service = $this->service->create($serviceRequest);
-            if($service != false){
-                return Response::Success($service, 'Service created successfully');
-            }else{
-                return Response::Error(false,'you not allowed to create service');
-            }
-
-        }catch (\Exception $exception){
-            return Response::Error($exception->getMessage(), $exception->getCode());
+        $service = $this->service->create($serviceRequest);
+        if($service != false){
+            return Response::Success($service, 'Service created successfully');
+        }else{
+            return Response::Error(false,'you not allowed to create service');
         }
+//        try {
+//
+//        }catch (\Exception $exception){
+//            return Response::Error($exception->getMessage(), $exception->getCode());
+//        }
     }
 
 
