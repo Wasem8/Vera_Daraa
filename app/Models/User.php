@@ -80,4 +80,17 @@ class User extends Authenticatable implements  MustVerifyEmail
 
     }
 
+    public function workingHours()
+    {
+        return $this->hasMany(WorkingHour::class);
+    }
+
+    public function bookingServices()
+    {
+        return $this->hasMany(BookingService::class);
+
+    }
+
+
+
 }

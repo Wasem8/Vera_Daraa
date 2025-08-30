@@ -9,6 +9,7 @@ use App\Http\Responses\Response;
 use App\Models\Offer;
 use App\Services\OfferService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OfferController extends Controller
 {
@@ -41,7 +42,6 @@ class OfferController extends Controller
     public function show($id)
     {
         $offer = Offer::with('services')->find($id);
-
         if($offer->is_active == 1){
             if($offer){
 
@@ -61,6 +61,9 @@ class OfferController extends Controller
 
         try {
 
+            if(!Auth::user()->hasRole(['admin'])){
+                return Response::Error(false,'you dont have permission to create offer');
+            }
         $offer = $this->offerService->store($offerRequest);
         if($offer != false){
             return Response::Success($offer, 'offer created successfully');
@@ -76,7 +79,9 @@ class OfferController extends Controller
 
    public function update(UpdateOfferRequest $request,$id)
    {
-
+       if(!Auth::user()->hasRole(['admin'])){
+           return Response::Error(false,'you dont have permission to update offer');
+       }
        $offerRequest = $request->validated();
 
         $offerId = Offer::query()->find($id);

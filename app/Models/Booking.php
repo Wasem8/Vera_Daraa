@@ -7,17 +7,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends Model
 {
-    protected $fillable = ['user_id','service_id','booking_date','notes','status','payment_status'];
+    protected $fillable = ['user_id','services','booking_date','notes','status','payment_status'];
+
+    public function services()
+    {
+        return $this->belongsToMany(Service::class, 'booking_services')
+            ->withTimestamps();
+    }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(User::class);
     }
-
-  public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
-  {
-      return $this->belongsTo(Service::class);
-  }
     public function payments(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
         return $this->hasMany(Payment::class);
@@ -34,4 +35,7 @@ class Booking extends Model
    {
        return $this->hasOne(Invoice::class);
    }
+
+
+
 }

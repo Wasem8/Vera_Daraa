@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\Response;
 use App\Models\Booking;
 use App\Models\BookingArchiver;
+use App\Models\Service;
 use App\Services\BookingArchivedService;
 use App\Services\BookingService;
 use Carbon\Carbon;
@@ -125,5 +126,31 @@ class WebBookingController extends Controller
 
         $invoice = $this->bookingArchivedService->unArchive($archive);
         return Response::Success($invoice,'success');
+    }
+
+    public function availability(Request $request)
+    {
+        $request->validate([
+            'date' => 'required|date_format:Y-m-d',
+            'services' => 'required|array|min:1',
+            'services.*' => 'exists:services,id',
+        ]);
+
+
+        $date = Carbon::parse($request->input('date'))->startOfDay();
+        $services = Service::with('category')->whereIn('id', $request->services)->get();
+
+
+        $result = [];
+        foreach ($services as $service) {
+            $result[$service->id] = $this->findServiceSlotsForDay($service, $date);
+        }
+
+
+        return response()->json([
+            'success' => true,
+            'date' => $date->toDateString(),
+            'availability' => $result,
+        ]);
     }
 }

@@ -11,7 +11,7 @@ class  DepartmentService
 {
     public function create(array $data)
     {
-        if(Auth::user()->hasRole(['admin','receptionist'])){
+        if(Auth::user()->hasRole(['admin'])){
             if (Department::where('name', $data['name'])->exists()) {
                 return Response::Validation([],'name is already exist');
             }
@@ -28,7 +28,7 @@ class  DepartmentService
            return $department->refresh();
         });
     }
-    public function destroy(Department $department)
+    public function destroy($department)
     {
         DB::transaction(fn() =>  $department->delete());
     }

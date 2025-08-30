@@ -11,7 +11,7 @@ class OfferService
 
     public function store(array $data)
     {
-            if(Auth::user()->hasRole(['admin','receptionist'])){
+            if(Auth::user()->hasRole(['admin'])){
                 $offer = Offer::query()->create($data);
                 foreach ($data['services'] as $serviceId) {
                     $service  = Service::query()->find($serviceId);
@@ -28,7 +28,7 @@ class OfferService
     }
 
     public function update(array $data, $id){
-        if(Auth::user()->hasRole(['admin','receptionist'])) {
+        if(Auth::user()->hasRole(['admin'])) {
             $offer = Offer::with('services')->find($id);
             if($offer){
 

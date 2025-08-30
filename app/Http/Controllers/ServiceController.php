@@ -43,11 +43,15 @@ class ServiceController extends Controller
 
 
 
-    public function update(UpdateServiceRequest $request, Service $service)
+    public function update(UpdateServiceRequest $request,$serviceId)
     {
         $serviceRequest = $request->validated();
 
         try {
+            $service = Service::query()->find($serviceId);
+            if(!$service){
+                return Response::Error(false,'service not found');
+            }
             $serviceUpdate = $this->service->update($serviceRequest, $service);
             if ($serviceUpdate != false){
                 return Response::Success($serviceUpdate, 'Service updated successfully');
@@ -64,7 +68,7 @@ class ServiceController extends Controller
 
     public function destroy($serviceId)
     {
-        if(Auth::user()->hasRole(['admin','receptionist'])){
+        if(Auth::user()->hasRole(['admin'])){
             $service = Service::query()->find($serviceId);
             if ($service){
                 $service->delete();

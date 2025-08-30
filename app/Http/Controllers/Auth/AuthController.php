@@ -5,11 +5,15 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\UsersSignupRequest;
 use App\Http\Responses\Response;
+use App\Mail\VerifiedMail;
 use App\Models\User;
 use App\Services\UserService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\URL;
 
 class AuthController extends Controller
 {
@@ -23,7 +27,6 @@ class AuthController extends Controller
     public function register(UsersSignupRequest $request)
     {
         $data = [];
-
 
         try {
             $data = $this->userService->register($request->validated());
@@ -62,27 +65,7 @@ class AuthController extends Controller
     }
 
 
-    public function verifyEmail(Request $request, $id, $hash)
-    {
-        $user = User::query()->find($id);
-        if (!$user) {
-            return Response::success('false', 'user not found');
-        }
 
-        if (!hash_equals($hash, sha1($user->getEmailForVerification()))) {
-            return Response::success('false', 'wrong hash');
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            return Response::success('false', 'email already verified');
-        }
-
-        $user->markEmailAsVerified();
-        event(new Verified($user));
-        //    $request->fulfill();
-//    event(new Verified(User::query()->findOrFail($request->route('id'))));
-        return Response::success('true', 'Email verified');
-    }
 
 
     public function resendEmail(Request $request)
@@ -97,11 +80,35 @@ class AuthController extends Controller
             return Response::Error('false', 'email already verified');
         }
 
+        $verificationUrl = URL::temporarySignedRoute(
+            'custom.verification.verify',
+            now()->addMinutes(60),
+            ['id'=> $user->id, 'hash'=> sha1($user->email)]
+        );
 
-        event(new Registered($user));
-        //    $request->fulfill();
-//    event(new Verified(User::query()->findOrFail($request->route('id'))));
+        Mail::to($user->email)->send(new VerifiedMail($user, $verificationUrl));
         return Response::success('true', 'Email sent');
     }
+
+
+    public function customVerify(Request $request, $id, $hash)
+    {
+        $user = User::findOrFail($id);
+
+        if (! hash_equals((string) $hash, sha1($user->email))) {
+            return response()->json(['success' => false, 'message' => 'رابط تحقق غير صالح'], 400);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json(['success' => true, 'message' => 'البريد الإلكتروني مفعل مسبقاً']);
+        }
+
+        $user->markEmailAsVerified();
+        event(new Verified($user));
+
+        return response()->json(['success' => true, 'message' => 'تم التحقق من البريد الإلكتروني بنجاح']);
+    }
+
+
 
 }

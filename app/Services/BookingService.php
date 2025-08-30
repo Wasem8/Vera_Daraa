@@ -13,24 +13,40 @@ class BookingService
     public function booking($request)
     {
         $request->validate([
-            'service_id' => 'required|exists:services,id',
+            'services' => 'required|array',
+            'services.*' => 'exists:services,id',
             'booking_date' => 'required|date',
             'notes' => 'string',
         ]);
-        $service = Service::query()->find($request->service_id);
-        if(!$service->is_bookable){
-            return ['booking' => null, 'message' => 'Service is not bookable'];
-        }
-        $service->booking_count +=1;
-        $service->save();
+
+
         $booking = Booking::query()->create([
             'user_id' => Auth::id(),
-            'service_id' => $service->id,
             'booking_date' => $request->booking_date,
             'notes' => $request->notes,
-
         ]);
-        return ['booking' => $booking,'message' => 'Booking has been created'];
+
+        foreach ($request->services as $serviceId) {
+            $service = Service::find($serviceId);
+
+            if (!$service->is_bookable) {
+                return ['booking' => null, 'message' => "Service {$service->name} is not bookable"];
+            }
+
+            $service->increment('booking_count');
+            $booking->services()->attach($serviceId);
+        }
+        $bookingTime = Carbon::parse($request->booking_date);
+        $startTime = $bookingTime->copy()->setTime(8,0);
+        $endTime = $bookingTime->copy()->setTime(20,0);
+        if ($bookingTime->lt($startTime)) {
+            return ['booking' => null, 'message' => 'you cant book before 8 am clock'];
+        }
+        if($bookingTime->gt($endTime)){
+            return ['booking' => null, 'message' => 'you cant book after 8 pm clock'];
+        }
+
+        return ['booking' => $booking->load('services'),'message' => 'Booking has been created'];
 
     }
 
@@ -42,11 +58,21 @@ class BookingService
         }
 
         if(Auth::user()->hasRole('client') && Auth::id() == $booking->user_id || Auth::user()->hasRole(['admin','receptionist']) ){
+
+            $request->validate([
+                'services' => 'required|array',
+                'services.*' => 'exists:services,id',
+                'booking_date' => 'required|date',
+                'notes' => 'string|nullable',
+            ]);
+
             $booking->update([
                 'booking_date' => $request->booking_date,
                 'notes' => $request->notes,
             ]);
-            return ['booking' => $booking,'message' => 'Booking has been updated'];
+
+            $booking->services()->sync($request->services);
+            return ['booking' => $booking->load('services'),'message' => 'Booking has been updated'];
         }else {
             return ['booking' => null, 'message' => 'You are not allowed to update booking'];
         }
@@ -79,13 +105,28 @@ class BookingService
    {
        $request->validate([
            'user_id' => 'required|exists:users,id',
-           'service_id' => 'required|exists:services,id',
+           'services' => 'required|array',
+           'services.*' => 'exists:services,id',
            'booking_date' => 'required|date',
            'notes' => 'string',
        ]);
-       $service = Service::query()->find($request->service_id);
-       if(!$service->is_bookable){
-           return ['booking' => null, 'message' => 'Service is not bookable'];
+
+
+       $booking = Booking::query()->create([
+           'user_id' => $request->user_id,
+           'booking_date' => $request->booking_date,
+           'notes' => $request->notes,
+       ]);
+
+       foreach ($request->services as $serviceId) {
+           $service = Service::find($serviceId);
+
+           if (!$service->is_bookable) {
+               return ['booking' => null, 'message' => "Service {$service->name} is not bookable"];
+           }
+
+           $service->increment('booking_count');
+           $booking->services()->attach($serviceId);
        }
        $bookingTime = Carbon::parse($request->booking_date);
        $startTime = $bookingTime->copy()->setTime(8,0);
@@ -97,20 +138,7 @@ class BookingService
            return ['booking' => null, 'message' => 'you cant book after 8 pm clock'];
        }
 
-
-
-       $service->booking_count +=1;
-       $service->save();
-       $booking = Booking::query()->create([
-           'user_id' => $request->user_id,
-           'service_id' => $service->id,
-           'booking_date' => $request->booking_date,
-           'notes' => $request->notes,
-
-       ]);
-       return ['booking' => $booking,'message' => 'Booking has been created'];
-
-
+       return ['booking' => $booking->load('services'),'message' => 'Booking has been created'];
    }
 
 

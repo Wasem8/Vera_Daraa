@@ -86,6 +86,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 });
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::post('/user',[UserManagementController::class,'storeUser']);
     Route::get('/users',[UserManagementController::class,'index']);
     Route::get('/user/{id}',[UserManagementController::class,'show']);
     Route::post('/users/{user}/toggle-status',[UserManagementController::class,'toggleStatus']);

@@ -27,7 +27,9 @@ Route::get('/user', function (Request $request) {
 
 
 Route::post('/register',[AuthController::class,'register']);
-Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware( 'signed');
+Route::get('/verify-email/{id}/{hash}', [AuthController::class, 'customVerify'])
+    ->name('custom.verification.verify');
+
 Route::post('/email/verification-notification', [AuthController::class, 'resendEmail'])->middleware( 'throttle:6,1');
 Route::post('/login',[AuthController::class,'clientLogin']);
 Route::post('/forget-password',[ResetPasswordController::class,'userForgetPassword']);

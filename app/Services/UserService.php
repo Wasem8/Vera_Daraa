@@ -34,14 +34,23 @@ class UserService
     $user = $this->appendRolesAndPermissions($user);
     $user['token'] = $user->createToken('MyApp')->plainTextToken;
 
-//    $verificationUrl = Url::temporarySignedRoute(
+//   $verificationUrl = Url::temporarySignedRoute(
 //        'verification.verify',
 //        now()->addMinutes(60),
 //        ['id'=> $user->id, 'hash'=> sha1($user->email)]
 //    );
 //    Mail::to($user->email)->send(new VerifiedMail($user,$verificationUrl));
-        event(new Registered($user));
-    $message = "user registered successfully please verify Email";
+//        event(new Registered($user));
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'custom.verification.verify',
+            now()->addMinutes(60),
+            ['id'=> $user->id, 'hash'=> sha1($user->email)]
+        );
+
+        Mail::to($user->email)->send(new VerifiedMail($user, $verificationUrl));
+
+        $message = "user registered successfully please verify Email";
     return ['user'=>$user,'message'=> $message];
     }
 

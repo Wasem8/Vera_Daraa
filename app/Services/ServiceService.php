@@ -12,7 +12,7 @@ class  ServiceService
 {
     public function create(array $data)
     {
-        if(Auth::user()->hasRole(['admin','receptionist'])){
+        if(Auth::user()->hasRole(['admin'])){
             $image = $data['image'] ?? null;
             $service = Service::query()->create($data);
             if (!empty($image)) {
@@ -34,7 +34,7 @@ class  ServiceService
      */
     public function update(array $data, Service $service)
     {
-        if(Auth::user()->hasRole(['admin','receptionist'])){
+        if(Auth::user()->hasRole(['admin'])){
                 return DB::transaction(function() use ($service, $data) {
                     $service->update($data);
                     return $service->refresh();

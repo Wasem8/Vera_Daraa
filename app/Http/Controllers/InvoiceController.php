@@ -24,7 +24,7 @@ class InvoiceController extends Controller
 
     public function index()
     {
-        if(Auth::user()->hasRole(['admin'])) {
+        if(Auth::user()->hasRole(['admin','receptionist'])) {
             $invoices = Invoice::all();
             return Response::Success($invoices, 'success');
         }
@@ -34,7 +34,7 @@ class InvoiceController extends Controller
 
     public function show($id)
     {
-        if (Auth::user()->hasRole(['admin'])) {
+        if (Auth::user()->hasRole(['admin','receptionist'])) {
             $invoice = Invoice::with('payments')->find($id);
             if(!$invoice){
                 return Response::Error(404, 'Invoice not found');

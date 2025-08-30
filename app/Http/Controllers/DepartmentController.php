@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateDepartmentRequest;
 use App\Http\Responses\Response;
 use App\Models\Department;
 use App\Services\DepartmentService;
+use Illuminate\Support\Facades\Auth;
 
 
 class DepartmentController extends Controller
@@ -32,6 +33,9 @@ class DepartmentController extends Controller
     public function show($id)
     {
         $department = Department::query()->find($id);
+        if(!$department){
+            return Response::Error(null,'Department Not Found');
+        }
         return Response::success($department,'department retrieved successfully');
     }
 
@@ -56,6 +60,9 @@ class DepartmentController extends Controller
     {
         $updatedDepartmentRequest = $request->validated();
         try {
+            if(!Auth::user()->hasRole(['admin'])){
+                return Response::Error(false,'you dont have permission to update department');
+            }
             $updatedDepartment = $this->departmentService->update($updatedDepartmentRequest, $department);
             return Response::Success($updatedDepartment, 'Department updated successfully');
         }catch (\Exception $exception){
@@ -63,8 +70,16 @@ class DepartmentController extends Controller
         }
 
     }
-    public function destroy(Department $department)
+    public function destroy($departmentId)
     {
+
+        $department = Department::query()->find($departmentId);
+        if(!$department){
+            return Response::Error(null,'Department Not Found');
+        }
+        if(!Auth::user()->hasRole(['admin'])){
+            return Response::Error(false,'you dont have permission to delete department');
+        }
         $this->departmentService->destroy($department);
         return Response::Success([],'Department deleted successfully');
     }

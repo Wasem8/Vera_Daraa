@@ -3,13 +3,26 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UsersSignupRequest;
 use App\Http\Responses\Response;
 use App\Models\User;
+use App\Services\UserService;
+use Illuminate\Auth\Events\Validated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 class UserManagementController extends Controller
 {
+    private UserService $userService;
+
+    public function __construct(UserService $userService)
+    {
+        $this->userService = $userService;
+    }
     public function index(){
         if(Auth::user()->hasRole('admin')) {
             $users = User::query()->whereNotIn('id', [auth()->id()])->get();
@@ -56,5 +69,23 @@ class UserManagementController extends Controller
         }else{
             return Response::Error(false,'Unauthorized');
         }
+    }
+
+    public function storeUser(StoreUserRequest $request)
+    {
+        $tempPassword = Str::random(8);
+       $user = User::query()->create([
+           'name'=> $request->name,
+           'email' => $request->email,
+           'password' => Hash::make($tempPassword),
+       ]);
+        $clientRole = Role::query()->where('name', 'client')->first();
+        $user->assignRole($clientRole);
+
+        $permissions = $clientRole->permissions()->pluck('name')->toArray();
+        $user->givePermissionTo($permissions);
+
+
+        return Response::Success($user, 'User created');
     }
 }
