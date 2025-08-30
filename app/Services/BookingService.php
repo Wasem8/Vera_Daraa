@@ -17,14 +17,18 @@ class BookingService
             'services.*' => 'exists:services,id',
             'booking_date' => 'required|date',
             'notes' => 'string',
+            'user_id'    => 'nullable|exists:users,id',
+            'customer_name'  => 'nullable|string|max:255',
+            'customer_phone' => 'nullable|string|max:20',
         ]);
 
+            $booking = Booking::create([
+                'user_id' => Auth::id(),
+                'booking_date'=> $request->booking_date,
+                'notes' => $request->notes,
+                'status'  => 'pending',
+            ]);
 
-        $booking = Booking::query()->create([
-            'user_id' => Auth::id(),
-            'booking_date' => $request->booking_date,
-            'notes' => $request->notes,
-        ]);
 
         foreach ($request->services as $serviceId) {
             $service = Service::find($serviceId);
@@ -63,11 +67,13 @@ class BookingService
                 'services' => 'required|array',
                 'services.*' => 'exists:services,id',
                 'booking_date' => 'required|date',
+                'client_phone' => 'sometimes|string|max:20',
                 'notes' => 'string|nullable',
             ]);
 
             $booking->update([
                 'booking_date' => $request->booking_date,
+                'client_phone' => $request->client_phone,
                 'notes' => $request->notes,
             ]);
 
@@ -104,20 +110,31 @@ class BookingService
    public function storeBooking($request): array
    {
        $request->validate([
-           'user_id' => 'required|exists:users,id',
            'services' => 'required|array',
            'services.*' => 'exists:services,id',
            'booking_date' => 'required|date',
            'notes' => 'string',
+           'user_id'    => 'nullable|exists:users,id',
+           'customer_name'  => 'nullable|string|max:255',
+           'customer_phone' => 'nullable|string|max:20',
        ]);
 
-
-       $booking = Booking::query()->create([
-           'user_id' => $request->user_id,
-           'booking_date' => $request->booking_date,
-           'notes' => $request->notes,
-       ]);
-
+       if ($request->filled('user_id')) {
+           $booking = Booking::create([
+               'user_id' => $request->user_id,
+               'booking_date'=> $request->booking_date,
+               'status'  => 'pending',
+               'notes' => $request->notes,
+           ]);
+       }else {
+           $booking = Booking::create([
+               'client_name'  => $request->client_name,
+               'client_phone' => $request->client_phone,
+               'booking_date'=> $request->booking_date,
+               'notes' => $request->notes,
+               'status'  => 'pending',
+           ]);
+       }
        foreach ($request->services as $serviceId) {
            $service = Service::find($serviceId);
 

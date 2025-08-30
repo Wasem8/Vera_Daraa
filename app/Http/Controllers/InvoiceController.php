@@ -35,7 +35,7 @@ class InvoiceController extends Controller
     public function show($id)
     {
         if (Auth::user()->hasRole(['admin','receptionist'])) {
-            $invoice = Invoice::with('payments')->find($id);
+            $invoice = Invoice::with(['booking','items'])->find($id);
             if(!$invoice){
                 return Response::Error(404, 'Invoice not found');
             }else{

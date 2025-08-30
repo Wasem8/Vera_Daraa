@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends Model
 {
-    protected $fillable = ['user_id','services','booking_date','notes','status','payment_status'];
+    protected $fillable = ['user_id','services','booking_date','notes','status','payment_status','client_name','client_phone'];
 
     public function services()
     {

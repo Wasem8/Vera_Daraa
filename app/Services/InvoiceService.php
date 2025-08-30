@@ -15,7 +15,10 @@ class InvoiceService
 
     public function createInvoice($booking)
     {
-        $total = $booking->services->sum('price');
+        $total = $booking->services->sum(function ($service) {
+            return $service->pivot->price ?? $service->price;
+        });
+
         $invoice = Invoice::create([
             'user_id' => $booking->user_id,
             'booking_id' => $booking->id,
@@ -28,7 +31,8 @@ class InvoiceService
         foreach ($booking->services as $service) {
             $invoice->items()->create([
                 'service_id' => $service->id,
-                'price'      => $service->price,
+                'name'       => $service->name,
+                'price'      => $service->pivot->price ?? $service->price,
             ]);
         }
 
