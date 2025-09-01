@@ -26,7 +26,7 @@ class InvoiceController extends Controller
     {
         if(Auth::user()->hasRole(['admin','receptionist'])) {
             $invoices = Invoice::all();
-            return Response::Success($invoices, 'success');
+            return Response::Success($invoices->load(['booking.service','payments']), 'success');
         }
         return Response::Error(401, 'Unauthorized');
     }
@@ -35,7 +35,7 @@ class InvoiceController extends Controller
     public function show($id)
     {
         if (Auth::user()->hasRole(['admin','receptionist'])) {
-            $invoice = Invoice::with(['booking','items'])->find($id);
+            $invoice = Invoice::with(['booking.service','payments'])->find($id);
             if(!$invoice){
                 return Response::Error(404, 'Invoice not found');
             }else{

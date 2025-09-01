@@ -183,13 +183,9 @@ class BookingService
 
                 if (!$service->is_bookable) {
                     return ['booking' => null, 'message' => "Service {$service->name} is not bookable"];
-
-
-                $service->increment('booking_count');
-
             }
 
-
+            $booking->service()->increment('booking_count');
             return ['booking' => $booking->load('service'), 'message' => 'Booking has been created','status'=>1];
         }
 

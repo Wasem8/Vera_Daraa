@@ -25,8 +25,9 @@ class UserManagementController extends Controller
     }
     public function index(){
         if(Auth::user()->hasRole('admin')) {
-            $users = User::query()->whereNotIn('id', [auth()->id()])->get();
-            return Response::Success($users, 'Users List');
+            $users = User::query()->with('bookings.invoice')->whereNotIn('id', [auth()->id()])->get();
+            $clients = $users->where('role', 'client');
+            return Response::Success($clients, 'Clients List');
         }else{
             return Response::Error(false,'Unauthorized');
         }
@@ -36,7 +37,7 @@ class UserManagementController extends Controller
     public function show($id)
     {
         if(Auth::user()->hasRole(['admin','receptionist'])) {
-            $users = User::query()->where('id',$id)->get();
+            $users = User::query()->with('bookings.invoice')->where('id',$id)->get();
             return Response::Success($users, 'Users List');
         }else{
             return Response::Error(false,'Unauthorized');
@@ -65,7 +66,8 @@ class UserManagementController extends Controller
         if(Auth::user()->hasRole(['admin','receptionist'])) {
             $user = User::where('name', 'like', '%' . $request->search . '%')
                 ->orWhere('email', 'like', '%' . $request->search . '%')->get();
-            return Response::Success($user, 'User');
+            $client = $user->where('role', 'client');
+            return Response::Success($client, 'Client');
         }else{
             return Response::Error(false,'Unauthorized');
         }

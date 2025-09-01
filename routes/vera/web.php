@@ -91,6 +91,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user/{id}',[UserManagementController::class,'show']);
     Route::post('/users/{user}/toggle-status',[UserManagementController::class,'toggleStatus']);
     Route::post('/search-user',[UserManagementController::class,'searchUser']);
+    Route::post('/add-user',[UserManagementController::class,'storeUser']);
 });
 
 Route::middleware(['auth:sanctum'])->prefix('admin/employees')->group(function () {

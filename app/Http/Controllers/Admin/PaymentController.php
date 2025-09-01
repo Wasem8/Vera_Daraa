@@ -52,7 +52,7 @@ class PaymentController extends Controller
         }
 
         if($request->amount > $invoice->remaining_amount){
-            return Response::Success($invoice->remaining_amount,'the amount bigger than remaining amount');
+            return Response::Error(false,"the amount {$request->amount} bigger than remaining amount: {$invoice->remaining_amount}");
         }
 
         $payment = Payment::create([
