@@ -23,7 +23,7 @@ class OfferController extends Controller
             'status' => 'required|string|in:all,active,inactive,expired',
         ]);
         if($request->status == 'all'){
-            $offers = Offer::all();
+            $offers = Offer::query()->with('services')->get();
             return Response::Success($offers, 'offers retrieved successfully');
         }elseif ($request->status == 'active') {
             $offers = Offer::query()->where('is_active', 1)->get();
@@ -42,13 +42,13 @@ class OfferController extends Controller
     public function show($id)
     {
         $offer = Offer::with('services')->find($id);
+        if(!$offer){
+            return Response::Error(null,"offer not found");
+        }
         if($offer->is_active == 1){
-            if($offer){
-
                 return Response::Success($offer, 'offer retrieved successfully');
-            }else{
-                return Response::Error(null,"offer not found");
-            }
+
+
         }else{
             return Response::Error(null,"offer is not active");
         }

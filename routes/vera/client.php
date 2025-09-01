@@ -7,6 +7,7 @@ use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Client\FavouriteController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FaceAnalysisController;
+use App\Http\Controllers\OfferController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Middleware\VerifiedEmail;
@@ -68,6 +69,11 @@ Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function (
     Route::delete('/remove-favourite/{id}',[FavouriteController::class,'removeFavourite']);
     Route::get('/favourite/{id}',[FavouriteController::class,'favourite']);
     Route::get('/favourites',[FavouriteController::class,'favourites']);
+
+
+    //offers
+    Route::get('/offer/{id}',[OfferController::class,'show']);
+    Route::post('/offers',[OfferController::class,'index']);
 
 
     Route::post('/analyze-face', [FaceAnalysisController::class, 'analyze']);
