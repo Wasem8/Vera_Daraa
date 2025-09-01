@@ -4,7 +4,8 @@ namespace App\Http\Controllers\Client;
 
 use App\Http\Controllers\Controller;
 use App\Http\Responses\Response;
-use App\Models\Client_Favorite;
+use App\Models\_Favorite;
+use App\Models\Favorite;
 use App\Services\FavouriteService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -46,13 +47,13 @@ class FavouriteController extends Controller
     public function favourites()
     {
         $id = Auth::id();
-        $favourites = Client_Favorite::query()->where('user_id', $id)->get();
+        $favourites = Favorite::query()->with('service')->where('user_id', $id)->get();
         return Response::Success($favourites,'success');
     }
 
     public function favourite($id){
         $user_id = Auth::id();
-        $favourite = Client_Favorite::query()->where('user_id', $user_id)->first();
+        $favourite = Favorite::query()->with('service')->where('user_id', $user_id)->first();
         return Response::Success($favourite,'success');
     }
 }

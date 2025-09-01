@@ -7,12 +7,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends Model
 {
-    protected $fillable = ['user_id','services','booking_date','notes','status','payment_status','client_name','client_phone'];
+    protected $fillable = ['user_id','service_id','booking_date','notes','status','payment_status'];
 
-    public function services()
+    public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsToMany(Service::class, 'booking_services')
-            ->withTimestamps();
+        return $this->belongsTo(Service::class);
     }
 
     public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo

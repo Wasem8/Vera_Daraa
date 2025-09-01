@@ -57,11 +57,11 @@ Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function (
 
     ///Booking
     Route::post('/booking',[BookingController::class,'booking']);
-    Route::post('/update-booking',[BookingController::class,'updateBooking']);
+    Route::post('/update-booking/{bookingId}',[BookingController::class,'updateBooking']);
     Route::get('/get-bookings',[BookingController::class,'getBookings']);
     Route::get('/get-booking/{id}',[BookingController::class,'getBooking']);
     Route::delete('delete-booking/{id}',[BookingController::class,'deleteBooking']);
-    Route::post('available',[BookingController::class,'availableSlots']);
+    Route::post('available',[BookingController::class,'getAvailableSlots']);
 
     //Favourites
     Route::get('/add-favourite/{id}',[FavouriteController::class,'addFavourite']);

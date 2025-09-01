@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Client_Favorite extends Model
+class Favorite extends Model
 {
     protected $fillable = ['user_id','service_id'];
     public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
@@ -12,8 +12,8 @@ class Client_Favorite extends Model
         return $this->belongsToMany(User::class);
     }
 
-    public function services(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsToMany(Service::class);
+        return $this->belongsTo(Service::class,);
     }
 }

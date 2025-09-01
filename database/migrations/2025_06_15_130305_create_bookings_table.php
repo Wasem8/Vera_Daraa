@@ -13,9 +13,8 @@ return new class extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->nullable()->references('id')->on('users')->cascadeOnDelete();
-            $table->string('client_name')->nullable();
-            $table->string('client_phone')->nullable();
+            $table->foreignId('user_id')->references('id')->on('users')->cascadeOnDelete();
+            $table->foreignId('service_id')->references('id')->on('services')->cascadeOnDelete();
             $table->dateTime('booking_date');
             $table->enum('status',['pending','confirmed','rejected','cancelled'])->default('pending');
             $table->text('notes')->nullable();

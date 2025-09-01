@@ -15,14 +15,14 @@ class Service extends Model
         return $this->belongsTo(Department::class);
     }
 
-    public function bookings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function bookings()
     {
         return $this->hasMany(Booking::class);
     }
 
     public function favorites(): \Illuminate\Database\Eloquent\Relations\HasMany
     {
-        return $this->hasMany(Client_Favorite::class);
+        return $this->hasMany(Favorite::class);
     }
 
     public function offers(): \Illuminate\Database\Eloquent\Relations\BelongsToMany

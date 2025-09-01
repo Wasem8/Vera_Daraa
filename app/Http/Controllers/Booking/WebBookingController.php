@@ -29,6 +29,13 @@ class WebBookingController extends Controller
 
         try {
             $data = $this->bookingService->storeBooking($request);
+            if ($data['status'] == 0) {
+                return response()->json([
+                    'status' => 0,
+                    'message' => $data['message'],
+                    'available_slots' => $data['available_slots'] ?? []
+                ], 400);
+            }
             return Response::Success($data['booking'],$data['message']);
         }
         catch (\Exception $exception){
@@ -38,11 +45,11 @@ class WebBookingController extends Controller
     }
 
 
-    public function updateBooking(Request $request){
+    public function updateBooking(Request $request,$bookingId){
         $data = [];
 
         try {
-            $data = $this->bookingService->updateBooking($request);
+            $data = $this->bookingService->updateBooking($request,$bookingId);
             return Response::Success($data['booking'],$data['message']);
         }
         catch (\Exception $exception){
@@ -129,22 +136,21 @@ class WebBookingController extends Controller
     }
 
 
-        public function availableSlots(Request $request)
+    public function getAvailableSlots(Request $request)
     {
         $request->validate([
-            'booking_date' => 'required|date',
-            'services' => 'required|array|min:1'
+            'service_id' => 'required|exists:services,id',
+            'date' => 'required|date',
         ]);
 
-        $slots = app(BookingService::class)->getAvailableSlots(
-            $request->booking_date,
-            $request->services
+        $slots = $this->bookingService->availableSlots(
+            $request->service_id,
+            $request->date
         );
 
         return response()->json([
-            'booking_date' => $request->booking_date,
-            'services' => $request->services,
-            'available_slots' => $slots
+            'status' => 1,
+            'data' => $slots
         ]);
     }
 

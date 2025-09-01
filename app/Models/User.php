@@ -71,7 +71,7 @@ class User extends Authenticatable implements  MustVerifyEmail
 
     public function favorites()
     {
-        return $this->hasMany(Client_Favorite::class);
+        return $this->hasMany(Favorite::class);
     }
 
     public function employee(): \Illuminate\Database\Eloquent\Relations\HasOne
@@ -79,18 +79,5 @@ class User extends Authenticatable implements  MustVerifyEmail
         return $this->hasOne(Employee::class);
 
     }
-
-    public function workingHours()
-    {
-        return $this->hasMany(WorkingHour::class);
-    }
-
-    public function bookingServices()
-    {
-        return $this->hasMany(BookingService::class);
-
-    }
-
-
 
 }

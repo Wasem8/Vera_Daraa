@@ -6,7 +6,6 @@ use App\Http\Controllers\Admin\UserManagementController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\ReceptionistAuthController;
 use App\Http\Controllers\Auth\ResetPasswordController;
-use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Booking\WebBookingController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\InvoiceArchivedController;
@@ -77,8 +76,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('canceled-booking/{booking}',[WebBookingController::class,'canceledBooking']);
     Route::get('/archive-booking/{booking}',[WebBookingController::class,'archive']);
     Route::get('/un-archive/{booking}',[WebBookingController::class,'unArchive']);
-    Route::post('update-booking',[WebBookingController::class,'updateBooking']);
-    Route::post('/available',[WebBookingController::class,'availableSlots']);
+    Route::post('update-booking/{id}',[WebBookingController::class,'updateBooking']);
+    Route::post('/available',[WebBookingController::class,'getAvailableSlots']);
 
 
     ///statistics
