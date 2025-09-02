@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Responses\Response;
 use App\Models\Booking;
+use App\Models\Offer;
 use App\Models\Service;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +14,36 @@ class BookingService
 {
     public function booking($request)
     {
+        $service = Service::query()->find($request->service_id);
+        if(!$service){
+            return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير موجودة'];
+            }
+        $price = $service->price;
+        $offerId = null;
+
+        // إذا أرسل offer_id
+        if (!empty($request->offer_id)) {
+            $offer = Offer::with(['services' => function ($q) use ($service) {
+                $q->where('services.id', $service->id);
+            }])->find($request->offer_id);
+
+            if (!$offer || !$offer->is_active || $offer->start_date > now() || $offer->end_date < now()) {
+                return ['status' => 0, 'data' => [], 'message' => 'العرض غير صالح'];
+            }
+
+            $serviceFromOffer = $offer->services->first();
+            if (!$serviceFromOffer) {
+                return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير مرتبطة بهذا العرض'];
+            }
+
+            $price = $serviceFromOffer->pivot->discounted_price;
+            $offerId = $offer->id;
+        }
+
         $request->validate([
             'service_id' => 'required|exists:services,id',
             'booking_date' => 'required|date',
+            'offer_id'=>'nullable|exists:offers,id',
             'notes' => 'string',
         ]);
 
@@ -43,9 +71,12 @@ class BookingService
             }
 
 
+
+
             $booking = Booking::create([
                 'user_id' => Auth::id(),
                 'booking_date' => $request->booking_date,
+                'offer_id'=> $offerId,
                 'notes' => $request->notes,
                 'status' => 'pending',
                 'service_id' => $request->service_id,
@@ -58,7 +89,10 @@ class BookingService
 
             }
             $service->increment('booking_count');
-            return ['booking' => $booking->load('service'), 'message' => 'Booking has been created','status'=>1];
+            return [  'data' => [
+                'booking' => $booking->load(['service', 'offer']),
+                'final_price' => $booking->final_price,
+            ], 'message' => 'Booking has been created','status'=>1];
 
         }
 
@@ -72,10 +106,36 @@ class BookingService
                     'message' => 'Booking not found'
                 ];
             }
+            $service = Service::query()->find($request->service_id);
+            if(!$service){
+                return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير موجودة'];
+            }
+            $price = $service->price;
+            $offerId = null;
+
+            if (!empty($request->offer_id)) {
+                $offer = Offer::with(['services' => function ($q) use ($service) {
+                    $q->where('services.id', $service->id);
+                }])->find($request->offer_id);
+
+                if (!$offer || !$offer->is_active || $offer->start_date > now() || $offer->end_date < now()) {
+                    return ['status' => 0, 'data' => [], 'message' => 'العرض غير صالح'];
+                }
+
+                $serviceFromOffer = $offer->services->first();
+                if (!$serviceFromOffer) {
+                    return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير مرتبطة بهذا العرض'];
+                }
+
+                $price = $serviceFromOffer->pivot->discounted_price;
+                $offerId = $offer->id;
+            }
+
 
             $request->validate([
                 'service_id' => 'exists:services,id',
                 'booking_date' => 'date',
+                'offer_id'=>'nullable|exists:offers,id',
                 'notes' => 'string',
             ]);
 
@@ -105,12 +165,16 @@ class BookingService
             $booking->update([
                 'booking_date' => $request->booking_date,
                 'service_id'   => $request->service_id,
+                'offer_id' => $request->offer_id,
                 'notes'        => $request->notes,
             ]);
 
             return [
                 'status' => 1,
-                'booking' => $booking->load('service'),
+                'data' => [
+                    'booking' => $booking->load(['service', 'offer']),
+                    'final_price' => $booking->final_price,
+                ],
                 'message' => 'تم تعديل الحجز بنجاح'
             ];
         }

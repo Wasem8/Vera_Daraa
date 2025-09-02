@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Booking extends Model
 {
-    protected $fillable = ['user_id','service_id','booking_date','notes','status','payment_status'];
+    protected $fillable = ['user_id','service_id','offer_id','booking_date','notes','status','payment_status'];
 
     public function service(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
@@ -35,6 +35,23 @@ class Booking extends Model
        return $this->hasOne(Invoice::class);
    }
 
+    public function offer(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(Offer::class);
+    }
+
+
+    public function getFinalPriceAttribute()
+    {
+        $basePrice = $this->service ? $this->service->price : 0;
+
+        if ($this->offer) {
+            $discount = $this->offer->discount_percentage ?? 0;
+            return $basePrice - ($basePrice * $discount / 100);
+        }
+
+        return $basePrice;
+    }
 
 
 }

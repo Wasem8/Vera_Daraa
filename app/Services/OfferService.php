@@ -30,9 +30,6 @@ class OfferService
     public function update(array $data, $id){
         if(Auth::user()->hasRole(['admin'])) {
             $offer = Offer::with('services')->find($id);
-            if($offer){
-
-            }
             $offer->update($data);
             if(isset($data['services']) && is_array($data['services'])){
                 $servicesData = [];

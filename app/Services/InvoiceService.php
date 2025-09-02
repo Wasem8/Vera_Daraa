@@ -16,15 +16,14 @@ class InvoiceService
 
     public function createInvoice($booking)
     {
-
         $service = $booking->service;
         $invoice = Invoice::create([
             'user_id' => $booking->user_id,
             'booking_id' => $booking->id,
             'invoice_date'=> now(),
-            'total_amount'=> $service->price,
+            'total_amount'=> $booking->final_price,
             'paid_amount' => 0,
-            'remaining_amount' => $service->price,
+            'remaining_amount' => $booking->final_price,
         ]);
 
         return $invoice->load('booking.service');

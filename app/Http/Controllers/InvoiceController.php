@@ -90,4 +90,28 @@ class InvoiceController extends Controller
         return Response::Success([$title,$summary,$invoices,$date], 'success');
     }
 
+
+    public function clientInvoices()
+    {
+        $user_id = Auth::id();
+        $invoices = Invoice::with(['booking.service','payments'])->where('user_id',$user_id)->get();
+        if(Auth::user()->hasRole('client')) {
+            return Response::Success($invoices, 'success');
+        }
+        return Response::Error(401, 'Unauthorized');
+    }
+
+    public function clientInvoice($id)
+    {
+        $user_id = Auth::id();
+        $invoice = Invoice::with(['booking.service','payments'])->where('user_id',$user_id)->find($id);
+        if(!$invoice){
+            return Response::Error(404, 'Invoice not found');
+        }
+            return Response::Success($invoice, 'success');
+
+    }
+
+
+
 }

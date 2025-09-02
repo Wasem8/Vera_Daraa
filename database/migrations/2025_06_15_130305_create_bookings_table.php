@@ -15,6 +15,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->references('id')->on('users')->cascadeOnDelete();
             $table->foreignId('service_id')->references('id')->on('services')->cascadeOnDelete();
+            $table->unsignedBigInteger('offer_id')->nullable();
+            $table->foreign('offer_id')
+                ->references('id')
+                ->on('offers')
+                ->nullOnDelete();
             $table->dateTime('booking_date');
             $table->enum('status',['pending','confirmed','rejected','cancelled'])->default('pending');
             $table->text('notes')->nullable();

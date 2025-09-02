@@ -30,7 +30,7 @@ class BookingController extends Controller
                 'available_slots' => $data['available_slots'] ?? []
             ], 400);
         }
-        return Response::Success($data['booking'],$data['message']);
+        return Response::Success($data['data'],$data['message']);
         }
         catch (\Exception $exception){
             $message = $exception->getMessage();
@@ -50,7 +50,7 @@ class BookingController extends Controller
                     'available_slots' => $data['available_slots'] ?? []
                 ], 400);
             }
-            return Response::Success($data['booking'],$data['message']);
+            return Response::Success($data['data'],$data['message']);
         }
         catch (\Exception $exception){
             $message = $exception->getMessage();
@@ -73,17 +73,33 @@ class BookingController extends Controller
 
     public function getBookings()
     {
-        $bookings = Auth::user()->bookings()->with('service')->get();
-        return Response::Success($bookings,'success');
+
+        $bookings = Booking::with(['service', 'offer'])->where('user_id',Auth::id())->get()->map(function ($booking) {
+            return [
+                'id' => $booking->id,
+                'booking_date' => $booking->booking_date,
+                'status' => $booking->status,
+                'notes' => $booking->notes,
+                'service' => $booking->service,
+                'offer' => $booking->offer,
+                'final_price' => $booking->final_price, // ✅ السعر بعد الخصم
+            ];
+
+        });
+        return [
+            'status' => 1,
+            'data' => $bookings,
+            'message' => 'قائمة المواعيد'
+        ];
     }
 
     public function getBooking($id){
         $user_id = Auth::id();
-        $booking = Booking::query()->with('service')->find($id);
+        $booking = Booking::query()->with(['service', 'offer'])->find($id);
         if(!$booking){
             return Response::Error(null,'Booking not found');
         }elseif ($booking->user_id == $user_id || Auth::user()->hasRole(['admin','receptionist']) ){
-            return Response::Success($booking,'success');
+            return Response::Success([$booking,'final_price'=>$booking->final_price],'success');
         } else {
             return Response::Error(null, 'You are not allowed to book this booking');
         }

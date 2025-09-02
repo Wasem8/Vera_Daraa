@@ -7,6 +7,7 @@ use App\Http\Controllers\Booking\BookingController;
 use App\Http\Controllers\Client\FavouriteController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FaceAnalysisController;
+use App\Http\Controllers\InvoiceController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
@@ -74,6 +75,10 @@ Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function (
     //offers
     Route::get('/offer/{id}',[OfferController::class,'show']);
     Route::post('/offers',[OfferController::class,'index']);
+
+    //invoices
+    Route::get('/invoices',[InvoiceController::class,'clientInvoices']);
+    Route::get('/invoice/{id}',[InvoiceController::class,'clientInvoice']);
 
 
     Route::post('/analyze-face', [FaceAnalysisController::class, 'analyze']);
