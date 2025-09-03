@@ -6,7 +6,7 @@ use App\Http\Responses\Response;
 use App\Models\Department;
 use App\Models\Service;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 class  ServiceService
@@ -14,8 +14,10 @@ class  ServiceService
     public function create(array $data)
     {
         if(Auth::user()->hasRole(['admin'])){
-            if (isset($data['image']) && $data['image'] instanceof \Illuminate\Http\UploadedFile) {
+            if (isset($data['image']) && $data['image'] instanceof UploadedFile) {
                 $data['image'] = $data['image']->store('services', 'public');
+            }else{
+                unset($data['image']);
             }
             return Service::query()->create($data);
 
@@ -37,6 +39,8 @@ class  ServiceService
                 }
 
                 $data['image'] = $data['image']->store('services', 'public');
+            }else{
+                unset($data['image']);
             }
 
             $service->update($data);

@@ -93,20 +93,24 @@ class AuthController extends Controller
 
     public function customVerify(Request $request, $id, $hash)
     {
-        $user = User::findOrFail($id);
+        $user = User::find($id);
+
+        if(!$user){
+            return  response()->view('Verify.error');
+        }
 
         if (! hash_equals((string) $hash, sha1($user->email))) {
             return response()->json(['success' => false, 'message' => 'رابط تحقق غير صالح'], 400);
         }
 
         if ($user->hasVerifiedEmail()) {
-            return response()->json(['success' => true, 'message' => 'البريد الإلكتروني مفعل مسبقاً']);
+            return response()->view('Verify.error');
         }
 
         $user->markEmailAsVerified();
         event(new Verified($user));
 
-        return response()->json(['success' => true, 'message' => 'تم التحقق من البريد الإلكتروني بنجاح']);
+        return response()->view('Verify.success');
     }
 
 

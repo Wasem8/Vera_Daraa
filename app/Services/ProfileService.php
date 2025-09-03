@@ -18,7 +18,7 @@ class ProfileService
             'address' => 'string|nullable|max:255',
             'phone' => 'string|nullable|max:20',
             'gender' => 'nullable|in:male,female',
-            'birthday' => 'nullable|date',
+            'birth_date' => 'nullable|date',
             'image' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ]);
         $profile = $user->profile?? new Profile();

@@ -16,24 +16,24 @@ class BookingService
     {
         $service = Service::query()->find($request->service_id);
         if(!$service){
-            return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير موجودة'];
+            return ['status' => 0, 'data' => [], 'message' => 'service not found'];
             }
         $price = $service->price;
         $offerId = null;
 
-        // إذا أرسل offer_id
+
         if (!empty($request->offer_id)) {
             $offer = Offer::with(['services' => function ($q) use ($service) {
                 $q->where('services.id', $service->id);
             }])->find($request->offer_id);
 
             if (!$offer || !$offer->is_active || $offer->start_date > now() || $offer->end_date < now()) {
-                return ['status' => 0, 'data' => [], 'message' => 'العرض غير صالح'];
+                return ['status' => 0, 'data' => [], 'message' => 'the offer is not valid'];
             }
 
             $serviceFromOffer = $offer->services->first();
             if (!$serviceFromOffer) {
-                return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير مرتبطة بهذا العرض'];
+                return ['status' => 0, 'data' => [], 'message' => 'the service is not related to offer'];
             }
 
             $price = $serviceFromOffer->pivot->discounted_price;
@@ -65,7 +65,7 @@ class BookingService
             if (!$found) {
                 return [
                     'status' => 0,
-                    'message' => 'الوقت غير متاح، الرجاء اختيار وقت آخر.',
+                    'message' => 'time is not available , please try another time',
                     'available_slots' => $slots['available_slots']
                 ];
             }
@@ -108,7 +108,7 @@ class BookingService
             }
             $service = Service::query()->find($request->service_id);
             if(!$service){
-                return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير موجودة'];
+                return ['status' => 0, 'data' => [], 'message' => 'the service is not found'];
             }
             $price = $service->price;
             $offerId = null;
@@ -119,12 +119,12 @@ class BookingService
                 }])->find($request->offer_id);
 
                 if (!$offer || !$offer->is_active || $offer->start_date > now() || $offer->end_date < now()) {
-                    return ['status' => 0, 'data' => [], 'message' => 'العرض غير صالح'];
+                    return ['status' => 0, 'data' => [], 'message' => 'offer is not valid'];
                 }
 
                 $serviceFromOffer = $offer->services->first();
                 if (!$serviceFromOffer) {
-                    return ['status' => 0, 'data' => [], 'message' => 'الخدمة غير مرتبطة بهذا العرض'];
+                    return ['status' => 0, 'data' => [], 'message' => 'the service is not related to offer'];
                 }
 
                 $price = $serviceFromOffer->pivot->discounted_price;
@@ -157,7 +157,7 @@ class BookingService
             if (!$found) {
                 return [
                     'status' => 0,
-                    'message' => 'الوقت غير متاح، الرجاء اختيار وقت آخر.',
+                    'message' => 'time is not available , please try another time',
                     'available_slots' => $slots['available_slots']
                 ];
             }
@@ -175,7 +175,7 @@ class BookingService
                     'booking' => $booking->load(['service', 'offer']),
                     'final_price' => $booking->final_price,
                 ],
-                'message' => 'تم تعديل الحجز بنجاح'
+                'message' => 'booking update successfully'
             ];
         }
 

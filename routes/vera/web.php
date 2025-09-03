@@ -53,6 +53,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/offer/{id}',[OfferController::class,'show'])->name('offer.show');
     Route::post('/offers',[OfferController::class,'index'])->name('offer.index');
     Route::post('/update-offer/{id}',[OfferController::class,'update'])->name('offer.update');
+    Route::delete('/delete-offer/{id}',[OfferController::class,'destroy']);
 
 
     //Invoice

@@ -100,8 +100,16 @@ class OfferController extends Controller
        }else{
            return Response::Error(null,"offer not found");
        }
+   }
 
-
+   public function destroy($id)
+   {
+       $offer = Offer::query()->find($id);
+       if(!$offer){
+           return Response::Error(null,'offer not found');
+       }
+       $deleted = $offer->delete();
+       return Response::Success($deleted, 'offer deleted successfully');
    }
 
 }

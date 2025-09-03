@@ -29,4 +29,16 @@ class Service extends Model
     {
         return $this->belongsToMany(Offer::class)->withPivot('discounted_price');
     }
+
+    public function getImageAttribute($value)
+    {
+        if (!$value) return null;
+
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        return asset('storage/' . $value);
+    }
+
 }
