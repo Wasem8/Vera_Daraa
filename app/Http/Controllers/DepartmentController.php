@@ -21,7 +21,7 @@ class DepartmentController extends Controller
 
     public function index(){
         try {
-               $departments = $this->departmentService->list();
+               $departments = Department::query()->with('services.offers')->get();
                 return Response::Success($departments,'Department List');
         }catch (\Exception $e){
                 return Response::Error($e->getMessage(),$e->getCode());
@@ -32,7 +32,7 @@ class DepartmentController extends Controller
 
     public function show($id)
     {
-        $department = Department::query()->find($id);
+        $department = Department::query()->with('services.offers')->find($id);
         if(!$department){
             return Response::Error(null,'Department Not Found');
         }
@@ -86,7 +86,7 @@ class DepartmentController extends Controller
 
 
     public function servicesDepartment($departmentId){
-        $department = Department::query()->with('services')->find($departmentId);
+        $department = Department::query()->with('services.offers')->find($departmentId);
         $services = $department->services;
         if(!$department){
             return Response::Error(false,"Department not found");

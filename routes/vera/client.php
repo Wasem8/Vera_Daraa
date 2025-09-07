@@ -8,6 +8,7 @@ use App\Http\Controllers\Client\FavouriteController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\FaceAnalysisController;
 use App\Http\Controllers\InvoiceController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OfferController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ServiceController;
@@ -82,6 +83,12 @@ Route::group(['middleware' => ['auth:sanctum',VerifiedEmail::class]], function (
 
 
     Route::post('/analyze-face', [FaceAnalysisController::class, 'analyze']);
+
+
+    //notifications
+    Route::get('/notifications', [NotificationController::class, 'index']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+    Route::delete('delete-notification/{id}', [NotificationController::class, 'destroy']);
 });
 
 

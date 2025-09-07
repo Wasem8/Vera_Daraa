@@ -20,7 +20,7 @@ class ServiceController extends Controller
 
 
     public function index(){
-        $services = Service::all();
+        $services = Service::query()->with('offers')->get();
         return Response::Success($services, 'Services List');
     }
 
@@ -86,7 +86,7 @@ class ServiceController extends Controller
 
 
     public function ShowService($id){
-        $service = Service::query()->find($id);
+        $service = Service::query()->with('offers')->find($id);
         if($service){
             return Response::Success($service,'service:');
         }

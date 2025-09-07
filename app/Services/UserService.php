@@ -34,13 +34,12 @@ class UserService
     $user = $this->appendRolesAndPermissions($user);
     $user['token'] = $user->createToken('MyApp')->plainTextToken;
 
-//   $verificationUrl = Url::temporarySignedRoute(
-//        'verification.verify',
-//        now()->addMinutes(60),
-//        ['id'=> $user->id, 'hash'=> sha1($user->email)]
-//    );
-//    Mail::to($user->email)->send(new VerifiedMail($user,$verificationUrl));
-//        event(new Registered($user));
+        if (isset($request['fcm_token'])) {
+            $user->deviceTokens()->updateOrCreate(
+                ['token' => $request['fcm_token']],
+                ['user_id' => $user->id]
+            );
+        }
 
         $verificationUrl = URL::temporarySignedRoute(
             'custom.verification.verify',
@@ -82,6 +81,14 @@ class UserService
                     $user->load('roles','permissions');
                     $user = $this->appendRolesAndPermissions($user);
                     $user['token'] = $user->createToken('MyApp')->plainTextToken;
+
+                    if (isset($request['fcm_token'])) {
+                        $user->deviceTokens()->updateOrCreate(
+                            ['token' => $request['fcm_token']],
+                            ['user_id' => $user->id]
+                        );
+                    }
+
                     return [
                         'user' => $user,
                         'message' => "Logged in successfully",

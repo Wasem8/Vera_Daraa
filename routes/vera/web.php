@@ -22,8 +22,8 @@ Route::get('/', function () {
 
 
 
-Route::post('/admin/login',[AdminAuthController::class,'adminLogin']);
-Route::post('/receptionist/login',[ReceptionistAuthController::class,'receptionistLogin']);
+    Route::post('/admin/login',[AdminAuthController::class,'adminLogin']);
+    Route::post('/receptionist/login',[ReceptionistAuthController::class,'receptionistLogin']);
 
 Route::post('/forget-password',[ResetPasswordController::class,'userForgetPassword']);
 Route::post('/check-code',[ResetPasswordController::class,'userCheckCode']);
@@ -31,7 +31,7 @@ Route::post('/reset-password',[ResetPasswordController::class,'userResetPassword
 
 
 
-Route::group(['middleware' => ['auth:sanctum']], function () {
+Route::group(['middleware' => ['auth:sanctum','active']], function () {
     Route::post('/logout',[AdminAuthController::class,'adminLogout']);
 
     //payments
@@ -70,6 +70,8 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
 
     ///booking
+    Route::get('/get-bookings',[WebBookingController::class,'index']);
+    Route::get('/get-booking/{id}',[WebBookingController::class,'show']);
     Route::post('/store-booking',[WebBookingController::class,'storeBooking']);
     Route::get('/booking-approve/{booking}',[WebBookingController::class,'bookingApprove']);
     Route::get('/booking-reject/{booking}',[WebBookingController::class,'bookingReject']);

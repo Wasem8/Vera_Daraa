@@ -14,7 +14,7 @@ class StatisticsController extends Controller
     public function numberClients(Request $request)
     {
 
-        if(!Auth::user()->hasRole(['admin'])){
+        if(!Auth::user()->hasRole(['admin','receptionist'])){
             return Response::Error(false,'you dont have permission to show numberClients');
         }
         $startDate = $request->input('start_date',Carbon::now()->subDays(30)->format('Y-m-d'));
@@ -29,7 +29,7 @@ class StatisticsController extends Controller
     public function mostPopularServices()
     {
 
-        if(!Auth::user()->hasRole(['admin'])){
+        if(!Auth::user()->hasRole(['admin','receptionist'])){
             return Response::Error(false,'you dont have permission to show mostPopularServices');
         }
         $services = Service::withCount('bookings')

@@ -6,6 +6,7 @@ use App\Http\Responses\Response;
 use App\Models\Booking;
 use App\Models\Offer;
 use App\Models\Service;
+use App\Notifications\BookingStatusChanged;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,9 +16,9 @@ class BookingService
     public function booking($request)
     {
         $service = Service::query()->find($request->service_id);
-        if(!$service){
+        if (!$service) {
             return ['status' => 0, 'data' => [], 'message' => 'service not found'];
-            }
+        }
         $price = $service->price;
         $offerId = null;
 
@@ -43,59 +44,62 @@ class BookingService
         $request->validate([
             'service_id' => 'required|exists:services,id',
             'booking_date' => 'required|date',
-            'offer_id'=>'nullable|exists:offers,id',
+            'offer_id' => 'nullable|exists:offers,id',
             'notes' => 'string',
         ]);
 
-            $slots = $this->availableSlots($request->service_id, $request->booking_date);
+        $slots = $this->availableSlots($request->service_id, $request->booking_date);
 
-            if ($slots['status'] == 0 || empty($slots['available_slots'])) {
-                return [
-                    'status' => 0,
-                    'message' => $slots['message'] ?? 'الوقت غير متاح'
-                ];
-            }
-
-
-            $requestedTime = Carbon::parse($request->booking_date)->format('H:i');
-            $found = collect($slots['available_slots'])->first(function ($slot) use ($requestedTime) {
-                return $slot['start'] <= $requestedTime && $slot['end'] > $requestedTime;
-            });
-
-            if (!$found) {
-                return [
-                    'status' => 0,
-                    'message' => 'time is not available , please try another time',
-                    'available_slots' => $slots['available_slots']
-                ];
-            }
+        if ($slots['status'] == 0 || empty($slots['available_slots'])) {
+            return [
+                'status' => 0,
+                'message' => $slots['message'] ?? 'الوقت غير متاح'
+            ];
+        }
 
 
+        $requestedTime = Carbon::parse($request->booking_date)->format('H:i');
+        $found = collect($slots['available_slots'])->first(function ($slot) use ($requestedTime) {
+            return $slot['start'] <= $requestedTime && $slot['end'] > $requestedTime;
+        });
+
+        if (!$found) {
+            return [
+                'status' => 0,
+                'message' => 'time is not available , please try another time',
+                'available_slots' => $slots['available_slots']
+            ];
+        }
 
 
-            $booking = Booking::create([
-                'user_id' => Auth::id(),
-                'booking_date' => $request->booking_date,
-                'offer_id'=> $offerId,
-                'notes' => $request->notes,
-                'status' => 'pending',
-                'service_id' => $request->service_id,
-            ]);
+        $booking = Booking::create([
+            'user_id' => Auth::id(),
+            'booking_date' => $request->booking_date,
+            'offer_id' => $offerId,
+            'notes' => $request->notes,
+            'status' => 'pending',
+            'service_id' => $request->service_id,
+        ]);
 
-            $service = Service::find($request->service_id);
+        $service = Service::find($request->service_id);
 
-            if (!$service->is_bookable) {
-                return ['booking' => null, 'message' => "Service {$service->name} is not bookable"];
+        if (!$service->is_bookable) {
+            return ['booking' => null, 'message' => "Service {$service->name} is not bookable"];
 
-            }
-            $service->increment('booking_count');
-            return [  'data' => [
+        }
+        $service->increment('booking_count');
+        if ($booking->user) {
+            $message = "Your booking for service{$service->name} has been created to {$booking->booking_date} please wait to confirm your booking.";
+            $booking->user->notify(new BookingStatusChanged($booking, 'pending', $message,'Create Booking'));
+        }
+
+
+        return [  'data' => [
                 'booking' => $booking->load(['service', 'offer']),
                 'final_price' => $booking->final_price,
             ], 'message' => 'Booking has been created','status'=>1];
 
         }
-
 
         public function updateBooking($request,$bookingId)
         {
@@ -168,6 +172,7 @@ class BookingService
                 'offer_id' => $request->offer_id,
                 'notes'        => $request->notes,
             ]);
+
 
             return [
                 'status' => 1,
@@ -292,7 +297,7 @@ class BookingService
 
                 $conflict = $bookings->first(function ($booking) use ($slotStart, $slotEnd) {
                     $bookingStart = Carbon::parse($booking->booking_date);
-                    $bookingEnd = $bookingStart->copy()->addMinutes(60); // نفس مدة الخدمة
+                    $bookingEnd = $bookingStart->copy()->addMinutes(60);
 
                     return $slotStart->between($bookingStart, $bookingEnd) ||
                         $slotEnd->between($bookingStart, $bookingEnd) ||
@@ -306,7 +311,7 @@ class BookingService
                     ];
                 }
 
-                $current->addMinutes($duration + 15); // استراحة 15 دقيقة بين المواعيد
+                $current->addMinutes($duration + 15);
             }
 
             return [

@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 use App\Models\Profile;
+use App\Models\Notification;
 
 
 class User extends Authenticatable implements  MustVerifyEmail
@@ -78,6 +79,27 @@ class User extends Authenticatable implements  MustVerifyEmail
     {
         return $this->hasOne(Employee::class);
 
+    }
+
+    public function deviceTokens(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
+    public function routeNotificationForFcm($notification = null): array
+    {
+        return $this->deviceTokens()->pluck('token')->toArray();
+    }
+
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->morphMany(Notification::class, 'notifiable')
+            ->orderBy('created_at', 'desc');
+    }
+
+    public function unreadNotifications(): \Illuminate\Database\Eloquent\Relations\MorphMany
+    {
+        return $this->notifications()->whereNull('read_at');
     }
 
 }

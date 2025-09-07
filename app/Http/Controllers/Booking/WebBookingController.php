@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Responses\Response;
 use App\Models\Booking;
 use App\Models\BookingArchiver;
+//use Illuminate\Support\Facades\Auth;
 use App\Models\Service;
+use App\Notifications\BookingStatusChanged;
 use App\Services\BookingArchivedService;
 use App\Services\BookingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class WebBookingController extends Controller
 {
@@ -36,7 +39,7 @@ class WebBookingController extends Controller
                     'available_slots' => $data['available_slots'] ?? []
                 ], 400);
             }
-            return Response::Success($data['booking'],$data['message']);
+                return Response::Success($data['booking'],$data['message']);
         }
         catch (\Exception $exception){
             $message = $exception->getMessage();
@@ -45,12 +48,20 @@ class WebBookingController extends Controller
     }
 
 
-    public function updateBooking(Request $request,$bookingId){
+    public function updateBooking(Request $request ,$bookingId){
+
         $data = [];
 
         try {
             $data = $this->bookingService->updateBooking($request,$bookingId);
-            return Response::Success($data['booking'],$data['message']);
+            if ($data['status'] == 0) {
+                return response()->json([
+                    'status' => 0,
+                    'message' => $data['message'],
+                    'available_slots' => $data['available_slots'] ?? []
+                ], 400);
+            }
+            return Response::Success($data['data'],$data['message']);
         }
         catch (\Exception $exception){
             $message = $exception->getMessage();
@@ -61,7 +72,7 @@ class WebBookingController extends Controller
 
     public function bookingApprove($bookingId)
     {
-        $booking = Booking::query()->find($bookingId);
+        $booking = Booking::query()->with('user')->find($bookingId);
         if (!$booking) {
                 return Response::Error(null,"Booking not found");
         }
@@ -69,6 +80,10 @@ class WebBookingController extends Controller
             return Response::Error(null,"Booking already confirmed");
         }
         $booking->update(['status' => 'confirmed']);
+        if ($booking->user) {
+            $booking->user->notify(
+                new BookingStatusChanged($booking, 'confirmed', 'Your booking has been approved.','Approved Booking'));
+        }
         return Response::Success($booking,'booking approved successfully');
     }
 
@@ -83,6 +98,10 @@ class WebBookingController extends Controller
             return Response::Error(null,"Booking already rejected");
         }
         $booking->update(['status' => 'rejected']);
+        if ($booking->user) {
+            $booking->user->notify(
+                new BookingStatusChanged($booking, 'rejected', 'Your booking has been rejected.','Rejected Booking'));
+        }
         return Response::Success($booking,'booking rejected successfully');
     }
 
@@ -155,4 +174,21 @@ class WebBookingController extends Controller
     }
 
 
+    public function index()
+    {
+        if(Auth::user()->hasRole(['admin','receptionist'])){
+        $bookings = Booking::query()->with(['service','user'])->get();
+        return Response::Success($bookings,'success');
+            }
+        return Response::Error(false,'you dont have permissions');
+    }
+
+    public function show($id)
+    {
+        if(Auth::user()->hasRole(['admin','receptionist'])){
+            $booking = Booking::query()->with(['service','user'])->find($id);
+            return Response::Success($booking,'success');
+        }
+        return Response::Error(false,'you dont have permissions');
+    }
 }

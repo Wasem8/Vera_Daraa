@@ -11,11 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('payments', function (Blueprint $table) {
+        Schema::create('device_tokens', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('invoice_id')->constrained();
-            $table->decimal('amount', 15, 2);
-            $table->dateTime('payment_date');
+            $table->string('token');
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }
@@ -25,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('payments');
+        Schema::dropIfExists('device_tokens');
     }
 };

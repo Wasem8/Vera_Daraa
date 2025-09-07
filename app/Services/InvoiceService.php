@@ -17,6 +17,7 @@ class InvoiceService
     public function createInvoice($booking)
     {
         $service = $booking->service;
+
         $invoice = Invoice::create([
             'user_id' => $booking->user_id,
             'booking_id' => $booking->id,
