@@ -14,32 +14,32 @@ use Spatie\Permission\Models\Role;
 
 class UserService
 {
-    public function register($request): array
+
+    public function register(array $data): array
     {
-        $user = User::query()->create([
-            'name' => $request['name'],
-            'email' => $request['email'],
-            'password' => bcrypt($request['password']),
+        $user = User::create([
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
         ]);
 
-        $clientRole = Role::query()->where('name', 'client')->first();
+
+        $clientRole = Role::where('name', 'client')->first();
         $user->assignRole($clientRole);
 
         $permissions = $clientRole->permissions()->pluck('name')->toArray();
         $user->givePermissionTo($permissions);
 
-        $user->load('roles','permissions');
+        $user = $this->appendRolesAndPermissions($user);
+        $user['token'] = $user->createToken('MyApp')->plainTextToken;
 
-    $user = User::query()->find($user->id);
-    $user = $this->appendRolesAndPermissions($user);
-    $user['token'] = $user->createToken('MyApp')->plainTextToken;
-
-        if (isset($request['fcm_token'])) {
+        if (!empty($data['fcm_token'])) {
             $user->deviceTokens()->updateOrCreate(
-                ['token' => $request['fcm_token']],
+                ['token' => $data['fcm_token']],
                 ['user_id' => $user->id]
             );
         }
+
 
         $verificationUrl = URL::temporarySignedRoute(
             'custom.verification.verify',
@@ -49,75 +49,53 @@ class UserService
 
         Mail::to($user->email)->send(new VerifiedMail($user, $verificationUrl));
 
-        $message = "user registered successfully please verify Email";
-    return ['user'=>$user,'message'=> $message];
+        return [
+            'user' => $user,
+            'message' => 'User registered successfully. Please verify your email.'
+        ];
     }
 
 
-
-    public function login($request, string $role): array
+    public function login(array $data, string $role): array
     {
-        $user = User::query()->where('email', Request::get('email'))->first();
-        if(!is_null($user)) {
-            if (!Auth::attempt($request->only('email', 'password'))) {
-                return [
-                    'user' => null,
-                    'message' =>"Invalid email or password",
-                'code' => 401];
-            } else {
+        $user = User::query()->where('email', $data['email'])->first();
+        if(!$user){
+            return ['user'=>null,'message'=>'user not found','code'=>404];
+        }
+        $fcmToken = $data['fcm_token'] ?? null;
+        unset($data['fcm_token']);
+        if(!Auth::attempt($data)){
+            return ['user' => null, 'message' => 'Invalid email or password', 'code' => 401];
+        }
+        if (!$user->hasVerifiedEmail()) {
+            return ['user' => false, 'message' => 'Please verify your email first', 'code' => 401];
+        }
+        if (!$user->hasRole($role)) {
+            return ['user' => null, 'message' => 'You do not have the required role', 'code' => 403];
+        }
 
-                if($user->email_verified_at == null){
-                    return [
-                        'user' => false,
-                        'message' => 'verify your email first',
-                        'code' => 401,
-                    ];
-                }else {
-                    if (!$user->hasRole($role)) { return [
-                        'user' => null,
-                        'message' => "noun",
-                        'code' => 200];
-                    }
-                    $user->load('roles','permissions');
-                    $user = $this->appendRolesAndPermissions($user);
-                    $user['token'] = $user->createToken('MyApp')->plainTextToken;
+        $user['token'] = $user->createToken('MyApp')->plainTextToken;
 
-                    if (isset($request['fcm_token'])) {
-                        $user->deviceTokens()->updateOrCreate(
-                            ['token' => $request['fcm_token']],
-                            ['user_id' => $user->id]
-                        );
-                    }
+        if (!empty($fcmToken)) {
+            $user->deviceTokens()->updateOrCreate(
+                ['token' => $fcmToken],
+                ['user_id' => $user->id]
+            );
+        }
 
-                    return [
-                        'user' => $user,
-                        'message' => "Logged in successfully",
-                        'code' => 200];
 
-                }
-            }
-        }else{
-            return [
-                'user' => null,
-                'message' => "User not found",
-                'code' => 404];
-            }
-
+        return ['user' => $user, 'message' => 'Logged in successfully', 'code' => 200];
     }
 
     public function logout(): array
     {
         $user = Auth::user();
-        if(!is_null($user)){
-            Auth::user()->currentAccessToken()->delete();
-            $message = "logout successfully";
-            $code = 200;
-        }else{
-            $message = "Invalid token";
-            $code = 404;
-        }
-        return ['user'=>$user,'message'=>$message,'code'=>$code];
 
+        if ($user) {
+            $user->currentAccessToken()->delete();
+            return ['user' => $user, 'message' => 'Logout successfully', 'code' => 200];
+        }
+        return ['user' => null, 'message' => 'Invalid token', 'code' => 404];
     }
 
 

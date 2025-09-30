@@ -22,9 +22,11 @@ class BookingRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'service_id' => 'required|exists:services,id',
+            'service_id'   => 'required|exists:services,id',
             'booking_date' => 'required|date|after:now',
-            'notes' => 'string|nullable|max:500',
+            'notes'        => 'string|nullable|max:500',
+            'offer_id'     => 'nullable|exists:offers,id',
+            'user_id'      => 'nullable|exists:users,id',
         ];
     }
 }

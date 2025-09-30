@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('departments', function (Blueprint $table) {
+        Schema::create('offer_service', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('suite_no');
-            $table->text('description');
-
+            $table->foreignId('offer_id')->references('id')->on('offers')->cascadeOnDelete();
+            $table->foreignId('service_id')->references('id')->on('services')->cascadeOnDelete();
+            $table->decimal('discounted_price',15,2);
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('departments');
+        Schema::dropIfExists('offer_service');
     }
 };

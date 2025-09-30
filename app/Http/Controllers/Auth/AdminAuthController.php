@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UserLoginRequest;
 use App\Http\Responses\Response;
 use App\Services\UserService;
 use Illuminate\Http\Request;
@@ -14,12 +15,12 @@ class AdminAuthController extends Controller
         $this->userService = $userService;
     }
 
-    public function adminLogin(Request $request)
+    public function adminLogin(UserLoginRequest $request)
     {
         $data = [];
         try {
-
-            $data = $this->userService->login($request,'admin');
+            $validated = $request->validated();
+            $data = $this->userService->login($validated,'admin');
             return Response::Success($data['user'], $data['message'],$data['code']);
         }
         catch (\Throwable $exception){

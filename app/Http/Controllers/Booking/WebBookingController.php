@@ -3,69 +3,59 @@
 namespace App\Http\Controllers\Booking;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\BookingRequest;
 use App\Http\Responses\Response;
 use App\Models\Booking;
 use App\Models\BookingArchiver;
-//use Illuminate\Support\Facades\Auth;
-use App\Models\Service;
 use App\Notifications\BookingStatusChanged;
-use App\Services\BookingArchivedService;
-use App\Services\BookingService;
+use App\Services\Booking\BookingArchivedService;
+use App\Services\Booking\BookingService;
+use App\Services\Booking\WebBookingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
+//use Illuminate\Support\Facades\Auth;
 
 class WebBookingController extends Controller
 {
     protected BookingService $bookingService;
     protected BookingArchivedService $bookingArchivedService;
+    protected WebBookingService $webBookingService;
 
 
-    public function __construct(BookingService $bookingService, BookingArchivedService $bookingArchivedService){
+    public function __construct(BookingService $bookingService,WebBookingService $webBookingService, BookingArchivedService $bookingArchivedService){
         $this->bookingService = $bookingService;
         $this->bookingArchivedService = $bookingArchivedService;
+        $this->webBookingService = $webBookingService;
     }
 
 
-    public function storeBooking(Request $request){
-        $data = [];
+    public function store(BookingRequest $request){
 
-        try {
-            $data = $this->bookingService->storeBooking($request);
-            if ($data['status'] == 0) {
-                return response()->json([
-                    'status' => 0,
-                    'message' => $data['message'],
-                    'available_slots' => $data['available_slots'] ?? []
-                ], 400);
+            try {
+                $data = $this->webBookingService->bookForClient($request);
+                if ($data['status'] == 0) {
+                    return Response::Error($data['data'] , $data['message']);
+                }
+                return Response::Success($data['data'], $data['message']);
+            } catch (\Exception $e) {
+                return Response::Error([], $e->getMessage());
             }
-                return Response::Success($data['booking'],$data['message']);
-        }
-        catch (\Exception $exception){
-            $message = $exception->getMessage();
-            return Response::Error($data, $message);
-        }
+
     }
 
 
-    public function updateBooking(Request $request ,$bookingId){
-
-        $data = [];
+    public function update(BookingRequest $request ,$bookingId){
 
         try {
-            $data = $this->bookingService->updateBooking($request,$bookingId);
+            $data = $this->webBookingService->update($bookingId, $request);
             if ($data['status'] == 0) {
-                return response()->json([
-                    'status' => 0,
-                    'message' => $data['message'],
-                    'available_slots' => $data['available_slots'] ?? []
-                ], 400);
+                return Response::Error($data['available_slots'] ?? [], $data['message']);
             }
-            return Response::Success($data['data'],$data['message']);
-        }
-        catch (\Exception $exception){
-            $message = $exception->getMessage();
-            return Response::Error($data, $message);
+            return Response::Success($data['data'], $data['message']);
+        } catch (\Exception $e) {
+            return Response::Error([], $e->getMessage());
         }
     }
 
@@ -117,18 +107,16 @@ class WebBookingController extends Controller
     }
 
 
-    public function canceledBooking($bookingId)
+    public function destroy($bookingId)
     {
-        $data = [];
         try {
-            $data = $this->bookingService->deleteBooking($bookingId);
-            return Response::Success($data['booking'],$data['message']);
-        }
-        catch (\Exception $exception){
-            $message = $exception->getMessage();
-            return Response::Error($data, $message);
+            $data = $this->webBookingService->cancel($bookingId);
+            return Response::Success($data['data'], $data['message']);
+        } catch (\Exception $e) {
+            return Response::Error([], $e->getMessage());
         }
     }
+
 
     public function archive($bookingId)
     {
@@ -176,19 +164,15 @@ class WebBookingController extends Controller
 
     public function index()
     {
-        if(Auth::user()->hasRole(['admin','receptionist'])){
         $bookings = Booking::query()->with(['service','user'])->get();
         return Response::Success($bookings,'success');
-            }
-        return Response::Error(false,'you dont have permissions');
+
     }
 
     public function show($id)
     {
-        if(Auth::user()->hasRole(['admin','receptionist'])){
-            $booking = Booking::query()->with(['service','user'])->find($id);
+            $booking = Booking::query()->with(['service','user'])->findOrFail($id);
             return Response::Success($booking,'success');
-        }
-        return Response::Error(false,'you dont have permissions');
+
     }
 }

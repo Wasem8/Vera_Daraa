@@ -25,7 +25,6 @@ class AddDepartmentRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:25|unique:departments,name',
-            'supervisor_id' => 'nullable|exists:employees,id',
             'suite_no' => 'required|string|max:25',
             'description' => 'required|string|max:255',
         ];

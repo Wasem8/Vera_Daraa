@@ -39,6 +39,7 @@ class User extends Authenticatable implements  MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'roles'
     ];
 
     public function getRoleAttribute()

@@ -4,9 +4,14 @@ namespace App\Models;
 
 use App\Services\InvoiceArchivedService;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Invoice extends Model
 {
+    use SoftDeletes;
+
+    protected $dates = ['deleted_at'];
+
     protected $fillable = ['user_id', 'booking_id', 'total_amount',
         'paid_amount', 'remaining_amount','invoice_date','status'];
 

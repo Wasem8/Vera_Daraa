@@ -2,34 +2,58 @@
 
 namespace App\Http\Responses;
 
+use Illuminate\Pagination\LengthAwarePaginator;
+
 class Response
 {
-    public static function Success($data,$message,$code=200): \Illuminate\Http\JsonResponse
+    /**
+     * Return a successful JSON response.
+     */
+    public static function Success($data, string $message, int $code = 200): \Illuminate\Http\JsonResponse
     {
-        return response()->json([
-            'status'=> 1,
-            'data' => $data,
-            'message'=> $message
-        ],$code);
+        $response = [
+            'status' => 1,
+            'message' => $message,
+            'data' => $data ?? (object)[],
+        ];
+
+
+        if ($data instanceof LengthAwarePaginator) {
+            $response['data'] = $data->items();
+            $response['pagination'] = [
+                'current_page' => $data->currentPage(),
+                'last_page' => $data->lastPage(),
+                'per_page' => $data->perPage(),
+                'total' => $data->total(),
+                'next_page_url' => $data->nextPageUrl(),
+                'prev_page_url' => $data->previousPageUrl(),
+            ];
+        }
+
+        return response()->json($response, $code);
     }
 
-
-    public static function Error($data,$message,$code=500): \Illuminate\Http\JsonResponse
+    /**
+     * Return an error JSON response.
+     */
+    public static function Error($data, string $message, int $code = 500): \Illuminate\Http\JsonResponse
     {
         return response()->json([
-            'status'=> 0,
-            'data' => $data,
-            'message'=> $message
-        ],$code);
+            'status' => 0,
+            'message' => $message,
+            'data' => $data ?? (object)[],
+        ], $code);
     }
 
-
-    public static function Validation($data,$message,$code=422): \Illuminate\Http\JsonResponse
+    /**
+     * Return a validation error JSON response.
+     */
+    public static function Validation($data, string $message, int $code = 422): \Illuminate\Http\JsonResponse
     {
         return response()->json([
-            'status'=> 1,
-            'data' => $data,
-            'message'=> $message
-        ],$code);
+            'status' => 0,
+            'message' => $message,
+            'errors' => $data ?? [],
+        ], $code);
     }
 }

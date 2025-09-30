@@ -26,7 +26,20 @@ class ServiceRequest extends FormRequest
             'description' => 'nullable|string',
             'price' => 'required|numeric|min:1',
             'department_id' => 'required|exists:departments,id',
-            'duration' => 'required|integer|min:1',
+            'duration' => [
+                'required',
+                'integer',
+                'min:1',
+                function ($attribute, $value, $fail) {
+                    $openingHour = 9;
+                    $closingHour = 21;
+                    $maxDurationInMinutes = ($closingHour - $openingHour) * 60;
+
+                    if ($value > $maxDurationInMinutes) {
+                        $fail("The service duration cannot exceed $maxDurationInMinutes minutes (working hours).");
+                    }
+                },
+            ],
             'is_bookable' => 'boolean',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];

@@ -11,46 +11,27 @@ class FavouriteService
         public function addFavourite($id)
         {
             $user_id = Auth::user()->id;
-            $service = Service::query()->find($id);
-            if(!$service){
-                return [
-                    'favourite'=>null,
-                    'message'=>'service not found'];
-            }
-            $existsFavourite = Favorite::query()->where('user_id', $user_id)->where('service_id', $service->id)->first();
+            $service = Service::query()->findOrFail($id);
+
+            $existsFavourite = Favorite::query()->where('user_id', $user_id)->where('service_id', $service->id)->exists();
             if($existsFavourite){
-                return [
-                    'favourite'=>null,
-                    'message'=>'favourite already exist'
-                ];
+                throw new \Exception('Favourite already exists');
             }
-            $favourite = Favorite::query()->create([
-                'user_id' => $user_id,
-                'service_id' => $service->id,
+            return Favorite::create([
+                'user_id'   => $user_id,
+                'service_id'=> $service->id,
             ]);
-            return [
-                'favourite'=>$favourite,
-                'message'=>'add favourite success'];
         }
 
         public function removeFavourite($id){
 
-            $favourite = Favorite::query()->find($id);
-            if(!$favourite){
-                return [
-                    'favourite'=>null,
-                    'message'=>'favourite not found'];
-            }
+            $favourite = Favorite::query()->findOrFail($id);
+
             if(Auth::id()!=$favourite->user_id){
-                return [
-                    'favourite'=>false,
-                    'message'=>'you do not have permission to remove this favourite'
-                ];
+                throw new \Exception('You do not have permission to remove this favourite');
             }
             $favourite->delete();
-            return [
-                'favourite'=>$favourite,
-                'message'=>'remove favourite success'];
+            return $favourite;
 
         }
 }

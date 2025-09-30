@@ -5,48 +5,48 @@ namespace App\Services;
 use App\Models\Offer;
 use App\Models\Service;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OfferService
 {
 
     public function store(array $data)
     {
-            if(Auth::user()->hasRole(['admin'])){
-                $offer = Offer::query()->create($data);
-                foreach ($data['services'] as $serviceId) {
-                    $service  = Service::query()->find($serviceId);
-                    $discountedPrice = $service->price * (1 - ($offer->discount_percentage / 100));
-                    $offer->services()->attach($serviceId,[
-                        'discounted_price' => $discountedPrice,
-                    ]);
-                }
-                $offer = Offer::with('services')->find($offer->id);
-                return $offer;
-            }else{
-                return false;
+        return DB::transaction(function () use ($data) {
+            $offer = Offer::create($data);
+
+            $servicesData = [];
+            foreach ($data['services'] as $serviceId) {
+                $service  = Service::find($serviceId);
+                $servicesData[$serviceId] = [
+                    'discounted_price' => $service->price * (1 - ($offer->discount_percentage / 100)),
+                ];
             }
+
+            $offer->services()->attach($servicesData);
+
+            return Offer::with('services')->find($offer->id);
+        });
     }
 
-    public function update(array $data, $id){
-        if(Auth::user()->hasRole(['admin'])) {
-            $offer = Offer::with('services')->find($id);
+    public function update(array $data, $id)
+    {
+        return DB::transaction(function () use ($data, $id) {
+            $offer = Offer::with('services')->findOrFail($id);
             $offer->update($data);
-            if(isset($data['services']) && is_array($data['services'])){
+
+            if (isset($data['services']) && is_array($data['services'])) {
                 $servicesData = [];
                 foreach ($data['services'] as $serviceId) {
-                    $service  = Service::query()->find($serviceId);
-                    $discountedPrice = $service->price * (1 - ($offer->discount_percentage / 100));
+                    $service  = Service::find($serviceId);
                     $servicesData[$serviceId] = [
-                        'discounted_price' => $discountedPrice,
+                        'discounted_price' => $service->price * (1 - ($offer->discount_percentage / 100)),
                     ];
                 }
                 $offer->services()->sync($servicesData);
             }
 
-            return $offer;
-
-        }else{
-            return false;
-        }
+            return $offer->fresh('services');
+        });
     }
 }
