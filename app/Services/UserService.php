@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Jobs\SaveDeviceTokenJob;
+use App\Jobs\SendVerificationEmailJob;
 use App\Mail\VerifiedMail;
 use App\Models\User;
 use http\Message;
@@ -34,10 +36,7 @@ class UserService
         $user['token'] = $user->createToken('MyApp')->plainTextToken;
 
         if (!empty($data['fcm_token'])) {
-            $user->deviceTokens()->updateOrCreate(
-                ['token' => $data['fcm_token']],
-                ['user_id' => $user->id]
-            );
+            SaveDeviceTokenJob::dispatch($user->id, $data['fcm_token']);
         }
 
 
@@ -47,7 +46,7 @@ class UserService
             ['id'=> $user->id, 'hash'=> sha1($user->email)]
         );
 
-        Mail::to($user->email)->send(new VerifiedMail($user, $verificationUrl));
+        SendVerificationEmailJob::dispatch($user, $verificationUrl);
 
         return [
             'user' => $user,
@@ -77,10 +76,7 @@ class UserService
         $user['token'] = $user->createToken('MyApp')->plainTextToken;
 
         if (!empty($fcmToken)) {
-            $user->deviceTokens()->updateOrCreate(
-                ['token' => $fcmToken],
-                ['user_id' => $user->id]
-            );
+            SaveDeviceTokenJob::dispatch($user->id, $fcmToken);
         }
 
 
